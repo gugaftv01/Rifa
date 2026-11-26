@@ -261,10 +261,29 @@ $('form-reserva').addEventListener('submit', async (e) => {
   [...ok, ...falhou].forEach((n) => estado.selecionados.delete(n));
   $('dlg-reserva').close();
   desenharRifa();
-  mostrarResultado(r, ok, falhou, nome);
+  mostrarResultado(r, ok, falhou, nome, telefone);
 });
 
-function mostrarResultado(r, ok, falhou, nome) {
+// Mensagem organizada que a pessoa envia junto com o comprovante.
+function mensagemWhatsApp({ c, r, pos, ok, nome, telefone, total }) {
+  const qtd = ok.length;
+  return [
+    `🏡 *${c.titulo}*`,
+    c.subtitulo ? `_${c.subtitulo}_` : null,
+    '',
+    'Olá! Acabei de reservar meus números 🍀',
+    '',
+    `👤 *Nome:* ${nome}`,
+    `📱 *WhatsApp:* ${formatarTelefone(telefone)}`,
+    `🎟️ *${pos}*`,
+    `🔢 *${qtd === 1 ? 'Número' : 'Números'}:* ${listaNumeros(ok)}`,
+    `💰 *Total:* ${total} (${qtd} × ${brl(r.preco)})`,
+    '',
+    'Segue o comprovante do Pix 👇',
+  ].filter((l) => l !== null).join('\n');
+}
+
+function mostrarResultado(r, ok, falhou, nome, telefone) {
   const c = estado.config;
   const pos = `Cartela ${estado.rifas.indexOf(r) + 1}/${estado.rifas.length}`;
   if (!ok.length) {
@@ -281,7 +300,7 @@ function mostrarResultado(r, ok, falhou, nome) {
     $('ok-pix').hidden = !c.pix;
     $('ok-pix-chave').textContent = c.pix || '';
     $('ok-instrucoes').textContent = c.instrucoes || '';
-    const link = linkWhatsApp(c.whatsapp, `Olá! Sou ${nome} e reservei os números ${listaNumeros(ok)} da ${pos} (total ${total}). Segue o comprovante:`);
+    const link = linkWhatsApp(c.whatsapp, mensagemWhatsApp({ c, r, pos, ok, nome, telefone, total }));
     $('ok-whats').hidden = !link;
     if (link) $('ok-whats').href = link;
   }
