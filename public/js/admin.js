@@ -373,7 +373,7 @@ function abrirRifa(id) {
     dataSorteio: '', ordem: (Math.max(0, ...estado.rifas.map((x) => x.ordem || 0)) + 1), ativa: true, imagem: '',
   };
   const f = $('form-rifa');
-  ['nome', 'premio', 'descricao', 'preco', 'totalNumeros', 'dataSorteio', 'ordem'].forEach((k) => { f.elements[k].value = r[k] ?? ''; });
+  ['nome', 'premio', 'preco', 'totalNumeros', 'dataSorteio', 'ordem'].forEach((k) => { f.elements[k].value = r[k] ?? ''; });
   f.elements.ativa.checked = r.ativa !== false;
   rifaImagem = r.imagem || '';
   mostrarImagemRifa();
@@ -404,7 +404,6 @@ $('form-rifa').addEventListener('submit', async (e) => {
   const dados = {
     nome: f.elements.nome.value.trim(),
     premio: f.elements.premio.value.trim(),
-    descricao: f.elements.descricao.value.trim(),
     preco: Math.round(Number(f.elements.preco.value) * 100) / 100,
     totalNumeros: Math.floor(Number(f.elements.totalNumeros.value)),
     dataSorteio: f.elements.dataSorteio.value,
