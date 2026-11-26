@@ -10,7 +10,7 @@ import {
   writeBatch, serverTimestamp, query, where, deleteField, orderBy, limit,
 } from '/vendor/firebase/13.4.0/firebase-firestore.js';
 import {
-  CONFIG_PADRAO, brl, soDigitos, formatarTelefone, linkWhatsApp, escapar, toast, prepararImagem,
+  CONFIG_PADRAO, brl, faixa, soDigitos, formatarTelefone, linkWhatsApp, escapar, toast, prepararImagem,
 } from './util.js';
 
 const auth = getAuth(app);
@@ -204,7 +204,8 @@ function irPara(secao) {
 
 /* ================= Resumo ================= */
 function estatisticas(r) {
-  const res = reservasDa(r.id).filter((x) => x.numero >= 1 && x.numero <= r.totalNumeros);
+  const { ini, fim } = faixa(r);
+  const res = reservasDa(r.id).filter((x) => x.numero >= ini && x.numero <= fim);
   const vendidos = res.filter((x) => x.status === 'vendido').length;
   const reservados = res.filter((x) => x.status !== 'vendido').length;
   const preco = Number(r.preco) || 0;
@@ -256,7 +257,8 @@ function desenharNumeros() {
   if (!r) { $('num-grade').innerHTML = '<p class="vazio">Crie uma rifa primeiro.</p>'; return; }
   const mapa = new Map(reservasDa(r.id).map((x) => [x.numero, x]));
   const partes = [];
-  for (let n = 1; n <= r.totalNumeros; n++) {
+  const { ini, fim } = faixa(r);
+  for (let n = ini; n <= fim; n++) {
     const res = mapa.get(n);
     const st = res ? (res.status === 'vendido' ? 'vendido' : 'reservado') : 'livres';
     if (estado.numFiltro !== 'todos' && estado.numFiltro !== st) continue;
@@ -542,7 +544,7 @@ function desenharRifas() {
       <h3>${escapar(r.nome)}</h3>
       ${r.ativa === false ? '<p class="inativa">Oculta no site</p>' : ''}
       <p class="premio">${escapar(r.premio || 'Prêmios não definidos')}</p>
-      <p>${r.totalNumeros} números · ${brl(r.preco)} cada</p>
+      <p>${r.totalNumeros} números (${faixa(r).ini} a ${faixa(r).fim}) · ${brl(r.preco)} cada</p>
       <p>${s.vendidos} vendidos · ${s.reservados} reservados · ${s.livres} livres</p>
       <div class="rifa-adm-acoes">
         <button class="btn btn-peq" data-editar="${escapar(r.id)}">Editar</button>
@@ -566,11 +568,13 @@ let rifaImagem = '';
 function abrirRifa(id) {
   rifaEditando = id;
   const r = id ? rifaPorId(id) : {
-    nome: `Rifa ${estado.rifas.length + 1}`, premio: '', descricao: '', preco: 10, totalNumeros: 100,
+    nome: `Rifa ${estado.rifas.length + 1}`, premio: '', preco: 25, totalNumeros: 100,
+    inicio: Math.max(0, ...estado.rifas.map((x) => faixa(x).fim)) + 1,
     dataSorteio: '', ordem: (Math.max(0, ...estado.rifas.map((x) => x.ordem || 0)) + 1), ativa: true, imagem: '',
   };
   const f = $('form-rifa');
   ['nome', 'premio', 'preco', 'totalNumeros', 'dataSorteio', 'ordem'].forEach((k) => { f.elements[k].value = r[k] ?? ''; });
+  f.elements.inicio.value = faixa(r).ini;
   f.elements.ativa.checked = r.ativa !== false;
   rifaImagem = r.imagem || '';
   mostrarImagemRifa();
@@ -603,6 +607,7 @@ $('form-rifa').addEventListener('submit', async (e) => {
     premio: f.elements.premio.value.trim(),
     preco: Math.round(Number(f.elements.preco.value) * 100) / 100,
     totalNumeros: Math.floor(Number(f.elements.totalNumeros.value)),
+    inicio: Math.floor(Number(f.elements.inicio.value)),
     dataSorteio: f.elements.dataSorteio.value,
     ordem: Number(f.elements.ordem.value) || 0,
     ativa: f.elements.ativa.checked,
@@ -612,12 +617,19 @@ $('form-rifa').addEventListener('submit', async (e) => {
   if (!dados.nome) { $('dr-erro').textContent = 'Informe o nome da rifa.'; return; }
   if (!(dados.preco >= 0)) { $('dr-erro').textContent = 'Valor inválido.'; return; }
   if (!(dados.totalNumeros >= 1 && dados.totalNumeros <= 10000)) { $('dr-erro').textContent = 'A quantidade de números deve ser entre 1 e 10.000.'; return; }
+  if (!(dados.inicio >= 1 && dados.inicio + dados.totalNumeros - 1 <= 99999)) { $('dr-erro').textContent = 'Primeiro número inválido.'; return; }
+  const nova = faixa(dados);
   if (rifaEditando) {
-    const maior = Math.max(0, ...reservasDa(rifaEditando).map((x) => x.numero));
-    if (dados.totalNumeros < maior) {
-      $('dr-erro').textContent = `O número ${maior} já está reservado/vendido. A quantidade não pode ser menor que ${maior}.`;
+    const fora = reservasDa(rifaEditando).map((x) => x.numero).filter((n) => n < nova.ini || n > nova.fim);
+    if (fora.length) {
+      $('dr-erro').textContent = `Os números ${fora.sort((a, b) => a - b).join(', ')} já estão reservados/vendidos e ficariam fora da cartela (${nova.ini} a ${nova.fim}). A quantidade não pode ser menor.`;
       return;
     }
+  }
+  const choque = estado.rifas.find((x) => x.id !== rifaEditando && faixa(x).ini <= nova.fim && nova.ini <= faixa(x).fim);
+  if (choque) {
+    $('dr-erro').textContent = `Os números ${nova.ini} a ${nova.fim} se misturam com a ${choque.nome} (${faixa(choque).ini} a ${faixa(choque).fim}). Ajuste o primeiro número ou a quantidade.`;
+    return;
   }
   $('dr-salvar').disabled = true;
   try {

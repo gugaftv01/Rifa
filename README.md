@@ -21,7 +21,7 @@ Hospedado no Firebase (projeto `rifa-gugaftv`). Veja também o [SEGURANCA.md](SE
 | Caminho | Conteúdo | Quem lê | Quem grava |
 |---|---|---|---|
 | `config/site` | título, nomes, aviso do sorteio, foto de fundo, Pix, WhatsApp | todos | ADM |
-| `rifas/{rifaId}` | nome, prêmio, valor, quantidade de números | todos | ADM |
+| `rifas/{rifaId}` | nome, prêmio, valor, primeiro número e quantidade (ex.: 101 a 200) | todos | ADM |
 | `rifas/{rifaId}/numeros/{n}` | status público do número (sem dados pessoais) | todos | visitante cria (nunca sobrescreve); ADM altera |
 | `reservas/{rifaId}_{n}` | nome e WhatsApp do comprador | só ADM | visitante cria junto com o número; ADM altera |
 | `admins/{uid}` | quem é administrador | o próprio usuário | só pelo console do Firebase |

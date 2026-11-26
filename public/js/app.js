@@ -4,7 +4,7 @@ import {
   collection, doc, onSnapshot, writeBatch, serverTimestamp,
 } from '/vendor/firebase/13.4.0/firebase-firestore.js';
 import {
-  CONFIG_PADRAO, brl, soDigitos, formatarTelefone, linkWhatsApp, escapar, toast,
+  CONFIG_PADRAO, brl, faixa, soDigitos, formatarTelefone, linkWhatsApp, escapar, toast,
 } from './util.js';
 
 const MAX_SELECAO = 30;
@@ -106,7 +106,8 @@ function desenharRifa() {
     return;
   }
   const pos = estado.rifas.indexOf(r) + 1;
-  $('cartela-pos').textContent = `Cartela ${pos}/${estado.rifas.length}`;
+  const { ini, fim } = faixa(r);
+  $('cartela-pos').textContent = `Cartela ${pos}/${estado.rifas.length} · ${ini} a ${fim}`;
   $('preco').textContent = brl(r.preco);
   $('data-sorteio').hidden = !r.dataSorteio;
   if (r.dataSorteio) $('data-sorteio').textContent = `Sorteio: ${new Date(`${r.dataSorteio}T12:00:00`).toLocaleDateString('pt-BR')}`;
@@ -120,9 +121,9 @@ function desenharRifa() {
 // depois fica só o coração piscando de leve; e repete.
 const rodizio = { lista: [], timer: null };
 function atualizarRodizio(r) {
-  const total = Number(r.totalNumeros) || 0;
+  const { ini, fim } = faixa(r);
   const livres = [];
-  for (let n = 1; n <= total; n++) if (!estado.ocupados.has(n)) livres.push(n);
+  for (let n = ini; n <= fim; n++) if (!estado.ocupados.has(n)) livres.push(n);
   rodizio.lista = livres;
   $('dica-coracao').hidden = !estado.numerosCarregados || !livres.length;
   if (livres.length && !rodizio.timer) varrerNumeros();
@@ -155,9 +156,9 @@ function desenharGrade(r) {
     $('grade').innerHTML = '<p class="carregando">Carregando números…</p>';
     return;
   }
-  const total = Number(r.totalNumeros) || 0;
+  const { ini, fim } = faixa(r);
   const partes = [];
-  for (let n = 1; n <= total; n++) {
+  for (let n = ini; n <= fim; n++) {
     const ocupado = estado.ocupados.has(n);
     const sel = estado.selecionados.has(n);
     const classe = ocupado ? 'num ocupado' : sel ? 'num meu' : 'num livre';

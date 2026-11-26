@@ -32,6 +32,7 @@ beforeEach(async () => {
     await setDoc(doc(db, 'rifas/rifa-2'), { nome: 'Rifa 2', totalNumeros: 50, preco: 5, ativa: true, ordem: 2 });
     await setDoc(doc(db, 'rifas/rifa-off'), { nome: 'Inativa', totalNumeros: 10, preco: 5, ativa: false, ordem: 9 });
     await setDoc(doc(db, 'config/site'), { titulo: 'Rifa' });
+    await setDoc(doc(db, 'rifas/cartela-2'), { nome: 'Cartela 2', totalNumeros: 100, inicio: 101, preco: 25, ativa: true, ordem: 3 });
   });
 });
 
@@ -160,4 +161,12 @@ test('registro de entradas: só o ADM grava (com o próprio uid) e lê', async (
   await assertSucceeds(setDoc(doc(admin(), 'acessos/a1'), dados('adm1')));
   await assertFails(getDocs(collection(intruso(), 'acessos')));
   await assertSucceeds(getDocs(collection(admin(), 'acessos')));
+});
+
+test('cartela 2 só aceita os números da sua faixa (101 a 200)', async () => {
+  await assertSucceeds(reservar(visitante(), 'cartela-2', 101));
+  await assertSucceeds(reservar(visitante(), 'cartela-2', 200));
+  await assertFails(reservar(visitante(), 'cartela-2', 100));
+  await assertFails(reservar(visitante(), 'cartela-2', 5));
+  await assertFails(reservar(visitante(), 'cartela-2', 201));
 });

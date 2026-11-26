@@ -38,7 +38,7 @@ for (let i = 1; i <= 8; i++) {
   const ref = doc(db, 'rifas', `rifa-${i}`);
   if ((await getDoc(ref)).exists()) continue;
   await setDoc(ref, {
-    nome: `Rifa ${i}`, premio: '', descricao: '', preco: 10, totalNumeros: 100,
+    nome: `Rifa ${i}`, premio: '', preco: 10, totalNumeros: 100, inicio: (i - 1) * 100 + 1,
     dataSorteio: '', ordem: i, ativa: true, imagem: '', criadaEm: serverTimestamp(),
   });
   console.log(`rifa-${i} criada`);

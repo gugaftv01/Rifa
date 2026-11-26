@@ -35,12 +35,15 @@ service cloud.firestore {
       return /databases/$(database)/documents/reservas/$(reservaId);
     }
 
-    // Número em texto canônico ("7", nunca "07") e dentro do limite da rifa ativa.
+    // Número em texto canônico ("7", nunca "07") e dentro da faixa da cartela ativa
+    // (ex.: cartela 2 = 101 a 200; sem "inicio", a cartela começa no 1).
     function numeroValido(rifaId, numero) {
       let rifa = get(rifaPath(rifaId)).data;
+      let ini = rifa.get('inicio', 1);
       return numero.matches('^[1-9][0-9]{0,4}$')
         && rifa.ativa == true
-        && int(numero) <= rifa.totalNumeros;
+        && int(numero) >= ini
+        && int(numero) < ini + rifa.totalNumeros;
     }
 
     // Registro de entradas do ADM: só o próprio ADM grava (com a hora do servidor) e lê.

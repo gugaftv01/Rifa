@@ -100,8 +100,11 @@ try {
 
   // 4) Rifas independentes: o número 5 da rifa 2 continua livre
   await b.click('#cartelas [data-rifa="rifa-2"]');
-  await b.waitForSelector('#grade .num.livre[data-n="5"]');
-  ok('o número 5 da cartela 2 continua livre (cartelas independentes)');
+  await b.waitForSelector('#grade .num.livre[data-n="105"]');
+  assert.equal(await b.locator('#grade .num').first().getAttribute('data-n'), '101');
+  assert.equal(await b.locator('#grade .num').last().getAttribute('data-n'), '200');
+  assert.equal(await b.locator('#grade .num[data-n="5"]').count(), 0);
+  ok('cartela 2 vai do 101 ao 200 e tem seus próprios números livres');
   await b.click('#cartelas [data-rifa="rifa-1"]');
   await b.waitForSelector('#grade .num.ocupado[data-n="5"]');
 
@@ -215,15 +218,24 @@ try {
 
   // ADM edita rifa (quantidade de números e prêmio)
   await adm.click('[data-secao="rifas"]');
-  await adm.click('[data-editar="rifa-3"]');
+  await adm.click('[data-editar="rifa-8"]');
   await adm.fill('#form-rifa [name=premio]', 'Air Fryer');
   await adm.fill('#form-rifa [name=totalNumeros]', '200');
   await adm.fill('#form-rifa [name=preco]', '5');
   await adm.click('#dr-salvar');
-  await a.click('#cartelas [data-rifa="rifa-3"]');
+  await a.click('#cartelas [data-rifa="rifa-8"]');
   await a.waitForFunction(() => document.querySelectorAll('#grade .num').length === 200);
   assert.match(await a.textContent('#premios'), /Air Fryer/);
-  ok('ADM alterou a Rifa 3 para 200 números e prêmio "Air Fryer"; o site atualizou');
+  assert.equal(await a.locator('#grade .num').last().getAttribute('data-n'), '900');
+  ok('ADM alterou a cartela 8 para 200 números (701 a 900) e prêmio "Air Fryer"; o site atualizou');
+
+  // Não deixa uma cartela invadir os números de outra
+  await adm.click('[data-editar="rifa-3"]');
+  await adm.fill('#form-rifa [name=totalNumeros]', '150');
+  await adm.click('#dr-salvar');
+  await adm.waitForFunction(() => /se misturam com a Rifa 4/.test(document.querySelector('#dr-erro').textContent));
+  await adm.click('#dr-cancelar');
+  ok('ADM não consegue fazer uma cartela invadir os números da outra');
 
   // Não deixa reduzir abaixo de um número já vendido
   await adm.click('[data-editar="rifa-1"]');

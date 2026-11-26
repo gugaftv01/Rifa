@@ -10,6 +10,13 @@ export const CONFIG_PADRAO = {
   instrucoes: 'Após reservar, faça o pagamento via Pix e envie o comprovante pelo WhatsApp. Seu número será confirmado assim que recebermos.',
 };
 
+// Faixa de números de uma cartela (ex.: cartela 2 = 101 a 200).
+export function faixa(r) {
+  const ini = Number(r?.inicio) || 1;
+  const total = Number(r?.totalNumeros) || 0;
+  return { ini, fim: ini + total - 1, total };
+}
+
 export const brl = (v) => (Number(v) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
 export const soDigitos = (s) => String(s || '').replace(/\D/g, '');
