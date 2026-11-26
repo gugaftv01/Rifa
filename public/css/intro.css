@@ -1,10 +1,10 @@
-/* Abertura (menos de 2 s): a casa se desenha, a porta abre com luz, a câmera entra pela porta
+/* Abertura (3,5 s): a casa se desenha, a porta abre com luz, a câmera entra pela porta
    e aparecem "Chá Rifa / Marcela & Guga" com a casinha ao lado do nome. */
 #intro {
   position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; overflow: hidden;
   background: radial-gradient(120% 80% at 50% 38%, #5a1226 0%, #2a0711 55%, #12040a 100%);
   color: #fff4ea; cursor: pointer; -webkit-tap-highlight-color: transparent;
-  animation: intro-sai .3s ease 1.65s forwards;
+  animation: intro-sai .5s ease 3s forwards;
 }
 .sem-intro #intro { display: none; }
 #intro.saindo { animation: intro-sai .45s ease forwards; }
@@ -14,24 +14,24 @@
 /* ---------- Cena 1: a casa ---------- */
 .intro-cena {
   position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none;
-  animation: cena-entra .35s cubic-bezier(.5, 0, .75, 0) .75s forwards;
+  animation: cena-entra .6s cubic-bezier(.5, 0, .75, 0) 1.35s forwards;
 }
 @keyframes cena-entra { to { transform: scale(3.2) translateY(-4%); opacity: 0; } }
 .casa-grande { width: min(64vw, 300px); height: auto; overflow: visible; }
 .casa-grande .desenho path {
   fill: none; stroke: #f4d48e; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round;
-  stroke-dasharray: 400; stroke-dashoffset: 400; animation: casa-desenha .4s ease-out forwards;
+  stroke-dasharray: 400; stroke-dashoffset: 400; animation: casa-desenha .7s ease-out forwards;
   filter: drop-shadow(0 0 6px rgba(244, 212, 142, .35));
 }
 .casa-grande .t1 { animation-delay: 0s; }
-.casa-grande .t2 { animation-delay: .05s; }
-.casa-grande .t3 { animation-delay: .1s; }
-.casa-grande .t4 { animation-delay: .18s; }
-.casa-grande .t5 { animation-delay: .22s; }
+.casa-grande .t2 { animation-delay: .09s; }
+.casa-grande .t3 { animation-delay: .18s; }
+.casa-grande .t4 { animation-delay: .32s; }
+.casa-grande .t5 { animation-delay: .4s; }
 @keyframes casa-desenha { to { stroke-dashoffset: 0; } }
 
 /* Porta: aparece fechada e depois abre (gira na dobradiça da esquerda). */
-.porta { opacity: 0; transform-box: fill-box; transform-origin: left center; animation: porta-surge .15s ease .25s forwards, porta-abre .35s cubic-bezier(.4, 0, .2, 1) .4s forwards; }
+.porta { opacity: 0; transform-box: fill-box; transform-origin: left center; animation: porta-surge .25s ease .45s forwards, porta-abre .6s cubic-bezier(.4, 0, .2, 1) .72s forwards; }
 .porta rect { fill: #8a1630; stroke: #f4d48e; stroke-width: 2; }
 .porta circle { fill: #f4d48e; }
 @keyframes porta-surge { to { opacity: 1; } }
@@ -41,12 +41,12 @@
 .luz {
   fill: #ffe3a1; opacity: 0;
   filter: drop-shadow(0 0 10px #ffd27a) drop-shadow(0 0 26px rgba(255, 196, 92, .8));
-  animation: luz-acende .3s ease .4s forwards;
+  animation: luz-acende .5s ease .72s forwards;
 }
 @keyframes luz-acende { to { opacity: 1; } }
 .coracao-janela {
   fill: #ff3b5c; transform-box: fill-box; transform-origin: center; transform: scale(0);
-  animation: coracao-pulsa .35s cubic-bezier(.3, 1.6, .5, 1) .5s forwards;
+  animation: coracao-pulsa .6s cubic-bezier(.3, 1.6, .5, 1) .9s forwards;
 }
 
 /* ---------- Cena 2: os nomes ---------- */
@@ -62,19 +62,19 @@
 }
 .intro-sub {
   margin: 8px 0 0; font: 800 clamp(12px, 3.6vw, 17px) / 1 var(--titulo); letter-spacing: .42em;
-  text-transform: uppercase; color: #f4d48e; opacity: 0; animation: intro-aparece .4s ease .95s forwards;
+  text-transform: uppercase; color: #f4d48e; opacity: 0; animation: intro-aparece .7s ease 1.7s forwards;
 }
 .intro-pular {
   position: absolute; bottom: calc(28px + env(safe-area-inset-bottom)); left: 0; right: 0; margin: 0;
   text-align: center; font-size: .8rem; letter-spacing: .14em; text-transform: uppercase; color: rgba(255, 244, 234, .55);
-  opacity: 0; animation: intro-aparece .3s ease .3s forwards;
+  opacity: 0; animation: intro-aparece .5s ease .55s forwards;
 }
 
 /* Cada letra começa espalhada e desfocada e se encaixa no lugar. */
 .letra {
   display: inline-block; white-space: pre; opacity: 0;
   transform: translate(var(--dx), var(--dy)) rotate(var(--rot)) scale(1.8); filter: blur(10px);
-  animation: letra-monta .4s cubic-bezier(.2, .85, .25, 1) var(--d) forwards;
+  animation: letra-monta .7s cubic-bezier(.2, .85, .25, 1) var(--d) forwards;
 }
 @keyframes letra-monta { to { opacity: 1; transform: none; filter: blur(0); } }
 
@@ -84,15 +84,15 @@
 }
 .intro-casa .traco {
   fill: none; stroke: #f4d48e; stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round;
-  stroke-dasharray: 120; stroke-dashoffset: 120; animation: casa-desenha .35s ease-out forwards;
+  stroke-dasharray: 120; stroke-dashoffset: 120; animation: casa-desenha .6s ease-out forwards;
 }
-.intro-casa .traco:nth-child(1) { animation-delay: .95s; }
-.intro-casa .traco:nth-child(2) { animation-delay: 1.03s; }
-.intro-casa .traco:nth-child(3) { animation-delay: 1.1s; }
-.intro-casa .traco:nth-child(4) { animation-delay: 1.13s; }
+.intro-casa .traco:nth-child(1) { animation-delay: 1.7s; }
+.intro-casa .traco:nth-child(2) { animation-delay: 1.85s; }
+.intro-casa .traco:nth-child(3) { animation-delay: 1.98s; }
+.intro-casa .traco:nth-child(4) { animation-delay: 2.03s; }
 .coracao-casa {
   fill: #ff3b5c; transform-origin: 32px 32px; transform: scale(0);
-  animation: coracao-pulsa .35s cubic-bezier(.3, 1.6, .5, 1) 1.28s forwards;
+  animation: coracao-pulsa .6s cubic-bezier(.3, 1.6, .5, 1) 2.3s forwards;
 }
 @keyframes coracao-pulsa { to { transform: scale(1); } }
 
@@ -118,7 +118,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  #intro { animation-delay: 1.2s; }
+  #intro { animation-delay: 2.2s; }
   .intro-cena { display: none; }
   .letra { transform: none; filter: none; animation: intro-aparece .6s ease forwards; }
   .intro-sub, .intro-pular { animation-delay: .3s; }

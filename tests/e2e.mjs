@@ -79,10 +79,10 @@ try {
   assert.equal(await intro.locator('#intro .intro-cha .letra').count(), 'Chá Rifa'.length);
   const inicioIntro = Date.now();
   await intro.waitForSelector('#intro', { state: 'detached', timeout: 10000 });
-  assert.ok(Date.now() - inicioIntro < 2500, `abertura demorou ${Date.now() - inicioIntro} ms`);
+  assert.ok(Date.now() - inicioIntro < 4500, `abertura demorou ${Date.now() - inicioIntro} ms`);
   await intro.click('#grade .num[data-n="1"]');
   assert.equal(await intro.locator('#grade .num.meu').count(), 1);
-  ok('abertura animada aparece e some sozinha em menos de 2,5 s, liberando o site');
+  ok('abertura animada (3,5 s) aparece e some sozinha, liberando o site');
 
   // 2) Visitante seleciona números verdes e reserva
   await a.click('#grade .num[data-n="5"]');

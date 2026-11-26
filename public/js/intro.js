@@ -14,10 +14,10 @@
     if (pular) { intro.remove(); return; }
 
     // Separa cada texto em letras que começam espalhadas pela tela.
-    var atraso = { 'intro-cha': 0.75, 'intro-nomes': 0.82 };
+    var atraso = { 'intro-cha': 1.35, 'intro-nomes': 1.48 };
     document.querySelectorAll('#intro [data-letras]').forEach(function (el) {
       var base = el.classList.contains('intro-cha') ? atraso['intro-cha'] : atraso['intro-nomes'];
-      var passo = el.classList.contains('intro-cha') ? 0.025 : 0.018;
+      var passo = el.classList.contains('intro-cha') ? 0.045 : 0.032;
       var texto = el.textContent;
       el.setAttribute('aria-label', texto);
       el.textContent = '';
