@@ -115,3 +115,32 @@
 .login-card .info { margin: .4rem 0 0; color: var(--verde); font-weight: 600; min-height: 0; }
 .alerta { padding: .8rem 1rem; border-radius: 12px; background: var(--vermelho-fundo); color: #a51c1c; font-weight: 700; }
 section[data-painel="seguranca"] h3 { margin: 1.4rem 0 .6rem; }
+
+/* ---------- Venda rápida ---------- */
+.lote-barra { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin: 8px 0 12px; }
+.lote-barra .dica { margin: 0; }
+.lote { position: sticky; top: 112px; z-index: 5; margin-bottom: 14px; padding: 14px 16px; border-radius: 16px; background: #fff; box-shadow: var(--sombra); border: 2px solid var(--verde); }
+.lote-titulo { margin: 0 0 8px; }
+.lote-titulo span { color: var(--texto-suave); word-break: break-word; }
+.lote-campos { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; }
+@media (max-width: 560px) { .lote-campos { grid-template-columns: 1fr; } }
+.lote label { font-weight: 600; font-size: .9rem; }
+.lote input { display: block; width: 100%; margin-top: .3rem; min-height: 44px; padding: .5rem .8rem; border: 1px solid var(--borda); border-radius: 12px; font: inherit; }
+.num.sel { background: #2563eb; color: #fff; border-color: #1e4fc2; box-shadow: 0 0 0 3px rgba(37, 99, 235, .3); }
+
+/* ---------- Pedidos (reservas por comprador) ---------- */
+.pedidos { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+.pedido { display: grid; gap: 8px; padding: 14px 16px; border-radius: 16px; background: #fff; box-shadow: var(--sombra); border-left: 6px solid var(--laranja); }
+.pedido.pago { border-left-color: var(--verde); }
+.pedido.parcial { border-left-color: #2563eb; }
+.pedido-topo { display: flex; justify-content: space-between; gap: 8px; align-items: flex-start; }
+.pedido h3 { margin: 0; font-size: 1.1rem; }
+.pedido .sub { margin: 0; color: var(--texto-suave); font-size: .88rem; }
+.pedido .sub a { color: var(--whats); font-weight: 700; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { min-width: 40px; padding: 4px 10px; border: 0; border-radius: 999px; font: inherit; font-weight: 800; cursor: pointer; background: var(--laranja-fundo); color: #9a5a00; }
+.chip.pago { background: var(--verde-fundo); color: #11743a; }
+.pedido-total { font-weight: 800; font-size: 1.05rem; }
+.pedido-acoes { display: flex; flex-wrap: wrap; gap: 8px; }
+.etiqueta.pago { background: var(--verde-fundo); color: #11743a; }
+.etiqueta.parcial { background: #e0eaff; color: #1e4fc2; }

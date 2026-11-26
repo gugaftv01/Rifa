@@ -186,8 +186,32 @@ try {
 
   // Reservas: lista com dados do comprador
   await adm.click('[data-secao="reservas"]');
-  await adm.waitForFunction(() => document.querySelectorAll('#res-tabela tr').length >= 3);
-  ok('ADM vê a lista de reservas com nome e WhatsApp');
+  await adm.waitForFunction(() => document.querySelectorAll('#res-lista .pedido').length >= 3);
+  ok('ADM vê as reservas agrupadas por comprador, com nome e WhatsApp');
+
+  // Venda rápida: vários números para a mesma pessoa de uma vez
+  await adm.click('[data-secao="numeros"]');
+  await adm.click('#btn-lote');
+  for (const n of [60, 61, 62]) await adm.click(`#num-grade .num[data-n="${n}"]`);
+  await adm.fill('#lote-nome', 'Família Souza');
+  await adm.fill('#lote-tel', '61988887777');
+  await adm.screenshot({ path: `${SHOTS}/adm-venda-rapida.png` });
+  await adm.click('[data-lote="reservado"]');
+  await adm.waitForFunction(() => [60, 61, 62].every((n) => document.querySelector(`#num-grade .num[data-n="${n}"]`).classList.contains('reservado')));
+  await a.waitForSelector('#grade .num.ocupado[data-n="61"]');
+  ok('venda rápida: 3 números salvos de uma vez para a mesma pessoa');
+
+  // Confirmar pagamento de todos os números da pessoa com um toque
+  await adm.click('[data-secao="reservas"]');
+  await adm.waitForSelector('#res-lista .pedido >> text=Família Souza');
+  await adm.screenshot({ path: `${SHOTS}/adm-reservas.png` });
+  const cartao = adm.locator('#res-lista .pedido', { hasText: 'Família Souza' });
+  await cartao.locator('[data-pagar]').click();
+  await adm.waitForFunction(() => {
+    const c = [...document.querySelectorAll('#res-lista .pedido')].find((x) => x.textContent.includes('Família Souza'));
+    return c && c.classList.contains('pago') && c.querySelectorAll('.chip.pago').length === 3;
+  });
+  ok('um toque em "Confirmar pagamento" marcou os 3 números da pessoa como pagos');
 
   // ADM edita rifa (quantidade de números e prêmio)
   await adm.click('[data-secao="rifas"]');

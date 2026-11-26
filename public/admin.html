@@ -6,8 +6,8 @@
   <meta name="robots" content="noindex, nofollow">
   <title>Painel ADM</title>
   <meta name="theme-color" content="#1e2a5a">
-  <link rel="stylesheet" href="/css/style.css?v=13">
-  <link rel="stylesheet" href="/css/admin.css?v=13">
+  <link rel="stylesheet" href="/css/style.css?v=14">
+  <link rel="stylesheet" href="/css/admin.css?v=14">
 </head>
 <body class="adm">
   <!-- Login -->
@@ -81,29 +81,42 @@
           <span><i class="bolinha reservado"></i>Reservado (aguardando pagamento)</span>
           <span><i class="bolinha ocupado"></i>Vendido (pago)</span>
         </div>
-        <p class="dica">Toque em um número para vender, reservar, confirmar pagamento ou liberar.</p>
+        <div class="lote-barra">
+          <button type="button" class="btn btn-verde" id="btn-lote">+ Venda rápida (vários números)</button>
+          <p class="dica" id="num-dica">Toque em um número para vender, reservar, confirmar pagamento ou liberar.</p>
+        </div>
+        <form class="lote" id="lote" hidden>
+          <p class="lote-titulo"><strong id="lote-qtd">Toque nos números livres para selecionar</strong> <span id="lote-nums"></span></p>
+          <div class="lote-campos">
+            <label>Nome do comprador <input id="lote-nome" maxlength="80" autocomplete="off"></label>
+            <label>WhatsApp <input id="lote-tel" inputmode="tel" maxlength="20" autocomplete="off"></label>
+          </div>
+          <p class="erro" id="lote-erro" role="alert"></p>
+          <div class="dlg-acoes">
+            <button type="button" class="btn btn-sec" id="lote-cancelar">Cancelar</button>
+            <button type="button" class="btn btn-laranja" data-lote="reservado">Reservar</button>
+            <button type="button" class="btn btn-verde" data-lote="vendido">Salvar como pago</button>
+          </div>
+        </form>
         <div class="grade" id="num-grade"></div>
       </section>
 
       <!-- Reservas -->
       <section data-painel="reservas" hidden>
-        <h2>Reservas e vendas</h2>
+        <h2>Reservas e pagamentos</h2>
+        <div class="cards-resumo" id="res-totais"></div>
         <div class="linha-ferramentas">
-          <select id="res-rifa" aria-label="Filtrar por rifa"><option value="">Todas as rifas</option></select>
-          <select id="res-status" aria-label="Filtrar por status">
-            <option value="">Todos os status</option>
-            <option value="reservado">Reservados</option>
-            <option value="vendido">Vendidos</option>
+          <select id="res-rifa" aria-label="Filtrar por cartela"><option value="">Todas as cartelas</option></select>
+          <select id="res-status" aria-label="Filtrar por situação">
+            <option value="">Todos</option>
+            <option value="pendente">Aguardando pagamento</option>
+            <option value="pago">Pagos</option>
           </select>
           <input type="search" id="res-busca" placeholder="Buscar nome, telefone ou número" aria-label="Buscar">
-          <button type="button" class="btn btn-sec btn-peq" id="btn-csv">Exportar CSV</button>
+          <button type="button" class="btn btn-sec btn-peq" id="btn-csv">Baixar planilha</button>
         </div>
-        <div class="tabela-wrap">
-          <table class="tabela">
-            <thead><tr><th>Rifa</th><th>Nº</th><th>Nome</th><th>WhatsApp</th><th>Status</th><th>Data</th><th>Ações</th></tr></thead>
-            <tbody id="res-tabela"></tbody>
-          </table>
-        </div>
+        <p class="dica">Cada cartão é uma pessoa. Toque em <strong>Confirmar pagamento</strong> quando o Pix cair: todos os números dela ficam pagos de uma vez.</p>
+        <div class="pedidos" id="res-lista"></div>
         <p class="vazio" id="res-vazio" hidden>Nenhuma reserva encontrada.</p>
       </section>
 
@@ -218,6 +231,6 @@
     </form>
   </dialog>
 
-  <script type="module" src="/js/admin.js?v=13"></script>
+  <script type="module" src="/js/admin.js?v=14"></script>
 </body>
 </html>

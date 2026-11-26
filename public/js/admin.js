@@ -237,12 +237,12 @@ function desenharSelects() {
   $('num-rifa').innerHTML = opcoes;
   if (estado.numRifa) $('num-rifa').value = estado.numRifa;
   const atual = $('res-rifa').value;
-  $('res-rifa').innerHTML = '<option value="">Todas as rifas</option>' + opcoes;
+  $('res-rifa').innerHTML = '<option value="">Todas as cartelas</option>' + opcoes;
   $('res-rifa').value = rifaPorId(atual) ? atual : '';
 }
 
 /* ================= Números ================= */
-$('num-rifa').addEventListener('change', (e) => { estado.numRifa = e.target.value; desenharNumeros(); });
+$('num-rifa').addEventListener('change', (e) => { estado.numRifa = e.target.value; lote.nums.clear(); desenharLote(); desenharNumeros(); });
 document.querySelector('[data-painel="numeros"] .segmentado').addEventListener('click', (e) => {
   const b = e.target.closest('[data-nfiltro]');
   if (!b) return;
@@ -260,7 +260,7 @@ function desenharNumeros() {
     const res = mapa.get(n);
     const st = res ? (res.status === 'vendido' ? 'vendido' : 'reservado') : 'livres';
     if (estado.numFiltro !== 'todos' && estado.numFiltro !== st) continue;
-    const classe = st === 'vendido' ? 'ocupado' : st === 'reservado' ? 'reservado' : 'livre';
+    const classe = st === 'vendido' ? 'ocupado' : st === 'reservado' ? 'reservado' : lote.nums.has(n) ? 'sel' : 'livre';
     const titulo = res ? `${res.nome} · ${formatarTelefone(res.telefone)}` : 'Disponível';
     partes.push(`<button type="button" class="num ${classe}" data-n="${n}" title="${escapar(titulo)}">${n}</button>`);
   }
@@ -269,8 +269,73 @@ function desenharNumeros() {
 
 $('num-grade').addEventListener('click', (e) => {
   const b = e.target.closest('[data-n]');
-  if (b) abrirNumero(estado.numRifa, Number(b.dataset.n));
+  if (!b) return;
+  const n = Number(b.dataset.n);
+  if (lote.ativo) {
+    const ocupado = estado.reservas.some((x) => x.rifaId === estado.numRifa && x.numero === n);
+    if (ocupado) { toast('Esse número já está reservado ou vendido.', 'aviso'); return; }
+    if (lote.nums.has(n)) lote.nums.delete(n); else lote.nums.add(n);
+    b.className = `num ${lote.nums.has(n) ? 'sel' : 'livre'}`;
+    desenharLote();
+    return;
+  }
+  abrirNumero(estado.numRifa, n);
 });
+
+/* ---------- Venda rápida: vários números para a mesma pessoa ---------- */
+const lote = { ativo: false, nums: new Set() };
+function desenharLote() {
+  const nums = [...lote.nums].sort((a, b) => a - b);
+  const r = rifaPorId(estado.numRifa);
+  $('lote').hidden = !lote.ativo;
+  $('btn-lote').hidden = lote.ativo;
+  $('num-dica').textContent = lote.ativo ? 'Venda rápida: toque nos números livres que a pessoa comprou.' : 'Toque em um número para vender, reservar, confirmar pagamento ou liberar.';
+  $('lote-qtd').textContent = nums.length ? `${nums.length} ${nums.length === 1 ? 'número' : 'números'} · ${brl(nums.length * (Number(r?.preco) || 0))}` : 'Toque nos números livres para selecionar';
+  $('lote-nums').textContent = nums.length ? `(${nums.join(', ')})` : '';
+}
+function fecharLote() {
+  lote.ativo = false; lote.nums.clear();
+  $('lote').reset(); $('lote-erro').textContent = '';
+  desenharLote(); desenharNumeros();
+}
+$('btn-lote').addEventListener('click', () => {
+  lote.ativo = true;
+  if (estado.numFiltro !== 'todos') document.querySelector('[data-nfiltro="todos"]').click();
+  desenharLote();
+  $('lote-nome').focus();
+});
+$('lote-cancelar').addEventListener('click', fecharLote);
+$('lote-tel').addEventListener('input', (e) => { const d = soDigitos(e.target.value).slice(0, 11); e.target.value = d.length > 2 ? formatarTelefone(d) || d : d; });
+$('lote').addEventListener('click', async (e) => {
+  const b = e.target.closest('[data-lote]');
+  if (!b) return;
+  const nums = [...lote.nums];
+  const nome = $('lote-nome').value.trim();
+  const telefone = soDigitos($('lote-tel').value);
+  if (!nums.length) { $('lote-erro').textContent = 'Selecione pelo menos um número.'; return; }
+  if (nome.length < 2) { $('lote-erro').textContent = 'Informe o nome do comprador.'; return; }
+  b.disabled = true;
+  try {
+    await registrarNumeros(estado.numRifa, nums, b.dataset.lote, nome, telefone);
+    toast(`${nums.length} ${nums.length === 1 ? 'número salvo' : 'números salvos'} para ${nome}!`);
+    fecharLote();
+  } catch (err) {
+    $('lote-erro').textContent = err.code === 'permission-denied' ? 'Algum número já foi pego por outra pessoa. Confira e tente de novo.' : `Erro: ${err.message}`;
+  } finally { b.disabled = false; }
+});
+
+// Grava vários números de uma vez (tudo ou nada).
+async function registrarNumeros(rifaId, nums, status, nome, telefone) {
+  const batch = writeBatch(db);
+  for (const n of nums) {
+    const reservaId = `${rifaId}_${n}`;
+    const dados = { rifaId, numero: n, nome, telefone, status, criadoEm: serverTimestamp(), origem: 'adm' };
+    if (status === 'vendido') dados.pagoEm = serverTimestamp();
+    batch.set(doc(db, 'rifas', rifaId, 'numeros', String(n)), { status, reservaId, criadoEm: serverTimestamp() });
+    batch.set(doc(db, 'reservas', reservaId), dados);
+  }
+  await batch.commit();
+}
 
 let numAtual = null;
 function abrirNumero(rifaId, n) {
@@ -349,62 +414,122 @@ async function executarAcao(acao, rifaId, n, { nome, telefone, existe } = {}) {
   await batch.commit();
 }
 
-/* ================= Reservas ================= */
+/* ================= Reservas (agrupadas por comprador) ================= */
 ['res-rifa', 'res-status', 'res-busca'].forEach((id) => $(id).addEventListener('input', desenharReservas));
 
-function reservasFiltradas() {
+// Junta as reservas da mesma pessoa (mesmo telefone e nome) na mesma cartela.
+function pedidos() {
+  const grupos = new Map();
+  for (const x of estado.reservas) {
+    const chave = `${x.rifaId}|${x.telefone || ''}|${(x.nome || '').trim().toLowerCase()}`;
+    if (!grupos.has(chave)) grupos.set(chave, { chave, rifaId: x.rifaId, nome: x.nome, telefone: x.telefone, itens: [] });
+    grupos.get(chave).itens.push(x);
+  }
+  return [...grupos.values()].map((g) => {
+    g.itens.sort((a, b) => a.numero - b.numero);
+    g.pendentes = g.itens.filter((x) => x.status !== 'vendido');
+    g.situacao = !g.pendentes.length ? 'pago' : g.pendentes.length === g.itens.length ? 'pendente' : 'parcial';
+    g.data = Math.max(...g.itens.map((x) => x.criadoEm?.toMillis?.() ?? 0));
+    return g;
+  });
+}
+
+function pedidosFiltrados() {
   const rifa = $('res-rifa').value;
   const st = $('res-status').value;
   const busca = $('res-busca').value.trim().toLowerCase();
   const buscaDig = soDigitos(busca);
-  return estado.reservas
-    .filter((x) => (!rifa || x.rifaId === rifa) && (!st || x.status === st))
-    .filter((x) => !busca || x.nome?.toLowerCase().includes(busca) || (buscaDig && (x.telefone?.includes(buscaDig) || String(x.numero) === buscaDig)))
-    .sort((a, b) => (b.criadoEm?.toMillis?.() ?? 0) - (a.criadoEm?.toMillis?.() ?? 0));
+  return pedidos()
+    .filter((g) => !rifa || g.rifaId === rifa)
+    .filter((g) => !st || (st === 'pago' ? g.situacao === 'pago' : g.situacao !== 'pago'))
+    .filter((g) => !busca || g.nome?.toLowerCase().includes(busca)
+      || (buscaDig && (g.telefone?.includes(buscaDig) || g.itens.some((x) => String(x.numero) === buscaDig))))
+    .sort((a, b) => (a.situacao === 'pago') - (b.situacao === 'pago') || b.data - a.data);
 }
 
 function desenharReservas() {
-  const lista = reservasFiltradas();
+  const todos = pedidos();
+  const aguardando = todos.filter((g) => g.situacao !== 'pago');
+  const valorPend = aguardando.reduce((t, g) => t + g.pendentes.length * (Number(rifaPorId(g.rifaId)?.preco) || 0), 0);
+  $('res-totais').innerHTML = `
+    <div><span>Aguardando pagamento</span><strong>${aguardando.length}</strong></div>
+    <div><span>Valor a receber</span><strong>${brl(valorPend)}</strong></div>
+    <div><span>Compradores pagos</span><strong>${todos.length - aguardando.length}</strong></div>`;
+  const lista = pedidosFiltrados();
   $('res-vazio').hidden = lista.length > 0;
-  $('res-tabela').innerHTML = lista.map((x) => {
-    const r = rifaPorId(x.rifaId);
-    const data = x.criadoEm?.toDate ? x.criadoEm.toDate().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : '';
-    const whats = linkWhatsApp(x.telefone, `Olá ${x.nome}! Sobre o número ${x.numero} da ${r?.nome || 'rifa'}:`);
-    return `<tr>
-      <td>${escapar(r?.nome || x.rifaId)}</td>
-      <td><strong>${x.numero}</strong></td>
-      <td>${escapar(x.nome)}</td>
-      <td>${whats ? `<a href="${whats}" target="_blank" rel="noopener">${escapar(formatarTelefone(x.telefone))}</a>` : ''}</td>
-      <td><span class="etiqueta ${x.status === 'vendido' ? 'vendido' : 'reservado'}">${x.status === 'vendido' ? 'Vendido' : 'Reservado'}</span></td>
-      <td>${data}</td>
-      <td class="acoes">
-        ${x.status === 'vendido' ? '' : `<button class="btn btn-verde btn-peq" data-res="vender" data-rifa="${escapar(x.rifaId)}" data-n="${x.numero}">Confirmar pago</button>`}
-        <button class="btn btn-sec btn-peq" data-res="abrir" data-rifa="${escapar(x.rifaId)}" data-n="${x.numero}">Detalhes</button>
-      </td></tr>`;
+  $('res-lista').innerHTML = lista.map((g) => {
+    const r = rifaPorId(g.rifaId);
+    const pos = estado.rifas.indexOf(r) + 1;
+    const preco = Number(r?.preco) || 0;
+    const nums = g.itens.map((x) => x.numero).join(', ');
+    const etiqueta = { pago: 'Pago', pendente: 'Aguardando pagamento', parcial: 'Pago em parte' }[g.situacao];
+    const quando = g.data ? new Date(g.data).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : '';
+    const valorPendente = g.pendentes.length * preco;
+    const cobrar = linkWhatsApp(g.telefone, `Olá ${g.nome}! Tudo bem? 😊\nSua reserva na *Cartela ${pos}* da Chá Rifa: números *${g.pendentes.map((x) => x.numero).join(', ')}*.\nTotal: *${brl(valorPendente)}*.\nAssim que fizer o Pix, me manda o comprovante, por favor. Obrigado! 🏡`);
+    const agradecer = linkWhatsApp(g.telefone, `Olá ${g.nome}! Recebemos seu pagamento 🎉\nSeus números na *Cartela ${pos}*: *${nums}*.\nMuito obrigado e boa sorte! 🍀🏡`);
+    return `<article class="pedido ${g.situacao}">
+      <div class="pedido-topo">
+        <div>
+          <h3>${escapar(g.nome)}</h3>
+          <p class="sub">${g.telefone ? `<a href="${linkWhatsApp(g.telefone, '')}" target="_blank" rel="noopener">${escapar(formatarTelefone(g.telefone))}</a> · ` : ''}Cartela ${pos || '?'} · ${quando}</p>
+        </div>
+        <span class="etiqueta ${g.situacao === 'pendente' ? 'reservado' : g.situacao}">${etiqueta}</span>
+      </div>
+      <div class="chips">${g.itens.map((x) => `<button type="button" class="chip ${x.status === 'vendido' ? 'pago' : ''}" data-abrir="${escapar(x.rifaId)}" data-n="${x.numero}" title="Detalhes do número ${x.numero}">${x.numero}</button>`).join('')}</div>
+      <div class="pedido-total">${g.itens.length} ${g.itens.length === 1 ? 'número' : 'números'} · ${brl(g.itens.length * preco)}${g.situacao === 'parcial' ? ` <small>(falta ${brl(valorPendente)})</small>` : ''}</div>
+      <div class="pedido-acoes">
+        ${g.situacao !== 'pago' ? `<button type="button" class="btn btn-verde btn-peq" data-pagar="${escapar(g.chave)}">✅ Confirmar pagamento (${brl(valorPendente)})</button>` : ''}
+        ${g.telefone && g.situacao !== 'pago' && cobrar ? `<a class="btn btn-whats btn-peq" href="${cobrar}" target="_blank" rel="noopener">Cobrar no WhatsApp</a>` : ''}
+        ${g.telefone && g.situacao === 'pago' && agradecer ? `<a class="btn btn-whats btn-peq" href="${agradecer}" target="_blank" rel="noopener">Enviar confirmação</a>` : ''}
+        <button type="button" class="btn btn-sec btn-peq" data-liberar="${escapar(g.chave)}">Liberar tudo</button>
+      </div>
+    </article>`;
   }).join('');
 }
 
-$('res-tabela').addEventListener('click', async (e) => {
-  const b = e.target.closest('[data-res]');
+$('res-lista').addEventListener('click', async (e) => {
+  const abrir = e.target.closest('[data-abrir]');
+  if (abrir) { abrirNumero(abrir.dataset.abrir, Number(abrir.dataset.n)); return; }
+  const pagar = e.target.closest('[data-pagar]');
+  const liberar = e.target.closest('[data-liberar]');
+  const b = pagar || liberar;
   if (!b) return;
-  const rifaId = b.dataset.rifa;
-  const n = Number(b.dataset.n);
-  if (b.dataset.res === 'abrir') { abrirNumero(rifaId, n); return; }
+  const g = pedidos().find((x) => x.chave === b.dataset.pagar || x.chave === b.dataset.liberar);
+  if (!g) return;
+  if (liberar && !confirm(`Liberar os números ${g.itens.map((x) => x.numero).join(', ')} de ${g.nome}? Eles voltam a ficar disponíveis no site.`)) return;
   b.disabled = true;
-  try { await executarAcao('vender', rifaId, n, { existe: true }); toast('Pagamento confirmado!'); }
-  catch (err) { toast('Erro: ' + err.message, 'erro'); b.disabled = false; }
+  try {
+    const batch = writeBatch(db);
+    const itens = pagar ? g.pendentes : g.itens;
+    for (const x of itens) {
+      const refNum = doc(db, 'rifas', x.rifaId, 'numeros', String(x.numero));
+      const refRes = doc(db, 'reservas', x.id);
+      if (pagar) {
+        batch.update(refNum, { status: 'vendido' });
+        batch.update(refRes, { status: 'vendido', pagoEm: serverTimestamp() });
+      } else {
+        batch.delete(refNum);
+        batch.delete(refRes);
+      }
+    }
+    await batch.commit();
+    toast(pagar ? `Pagamento de ${g.nome} confirmado! ${itens.length} ${itens.length === 1 ? 'número pago' : 'números pagos'}.` : 'Números liberados.');
+  } catch (err) { toast('Erro: ' + err.message, 'erro'); b.disabled = false; }
 });
 
 $('btn-csv').addEventListener('click', () => {
-  const linhas = [['Rifa', 'Numero', 'Nome', 'Telefone', 'Status', 'Data']];
-  reservasFiltradas().forEach((x) => linhas.push([
-    rifaPorId(x.rifaId)?.nome || x.rifaId, x.numero, x.nome, x.telefone, x.status,
-    x.criadoEm?.toDate ? x.criadoEm.toDate().toLocaleString('pt-BR') : '',
-  ]));
+  const linhas = [['Cartela', 'Número', 'Nome', 'WhatsApp', 'Situação', 'Valor', 'Reservado em', 'Pago em']];
+  const quando = (t) => (t?.toDate ? t.toDate().toLocaleString('pt-BR') : '');
+  const filtros = new Set(pedidosFiltrados().map((g) => g.chave));
+  pedidos().filter((g) => filtros.has(g.chave)).forEach((g) => g.itens.forEach((x) => {
+    const r = rifaPorId(x.rifaId);
+    linhas.push([`Cartela ${estado.rifas.indexOf(r) + 1}`, x.numero, x.nome, formatarTelefone(x.telefone),
+      x.status === 'vendido' ? 'Pago' : 'Aguardando pagamento', brl(r?.preco), quando(x.criadoEm), quando(x.pagoEm)]);
+  }));
   const csv = linhas.map((l) => l.map((c) => `"${String(c ?? '').replace(/"/g, '""')}"`).join(';')).join('\r\n');
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' }));
-  a.download = `reservas-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.href = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' }));
+  a.download = `reservas-e-pagamentos-${new Date().toISOString().slice(0, 10)}.csv`;
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 });
