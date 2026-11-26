@@ -13,10 +13,10 @@
   <link rel="preload" as="font" type="font/woff2" href="/fonts/montserrat-800.woff2" crossorigin>
   <link rel="preload" as="font" type="font/woff2" href="/fonts/alex-brush.woff2" crossorigin>
   <link rel="preconnect" href="https://firestore.googleapis.com">
-  <link rel="stylesheet" href="/css/style.css?v=16">
-  <link rel="stylesheet" href="/css/site.css?v=16">
-  <link rel="stylesheet" href="/css/intro.css?v=16">
-  <script src="/js/intro.js?v=16"></script>
+  <link rel="stylesheet" href="/css/style.css?v=17">
+  <link rel="stylesheet" href="/css/site.css?v=17">
+  <link rel="stylesheet" href="/css/intro.css?v=17">
+  <script src="/js/intro.js?v=17"></script>
 </head>
 <body class="site">
   <!-- Abertura animada: a casa se desenha, a porta abre e aparecem os nomes (toque para pular) -->
@@ -53,6 +53,9 @@
   </div>
   <!-- Fundo desfocado (aparece nas laterais em telas largas) -->
   <div class="fundo-pagina" aria-hidden="true"><img id="fundo-blur" src="/img/foto-3.jpg" alt=""></div>
+
+  <!-- Só no computador: alterna entre o cartaz estreito e a tela grande -->
+  <button type="button" class="btn-tela" id="btn-tela" hidden aria-pressed="false">⛶ Tela grande</button>
 
   <div class="poster">
     <!-- Foto do casal, fixa atrás do cartaz -->
@@ -162,6 +165,6 @@
     </div>
   </dialog>
 
-  <script type="module" src="/js/app.js?v=16"></script>
+  <script type="module" src="/js/app.js?v=17"></script>
 </body>
 </html>

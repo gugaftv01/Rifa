@@ -20,6 +20,31 @@ const estado = {
   pararNumeros: null,
 };
 
+/* ---------- Tela grande (computador) ---------- */
+(() => {
+  const btn = $('btn-tela');
+  const computador = matchMedia('(min-width: 900px)');
+  const aplicar = (grande) => {
+    document.body.classList.toggle('tela-grande', grande && computador.matches);
+    btn.textContent = grande ? '🗗 Tela normal' : '⛶ Tela grande';
+    btn.setAttribute('aria-pressed', grande);
+  };
+  let grande = false;
+  try { grande = localStorage.getItem('tela-grande') === '1'; } catch { /* ok */ }
+  const mostrar = () => { btn.hidden = !computador.matches; aplicar(grande); };
+  computador.addEventListener('change', mostrar);
+  mostrar();
+  btn.addEventListener('click', async () => {
+    grande = !grande;
+    try { localStorage.setItem('tela-grande', grande ? '1' : '0'); } catch { /* ok */ }
+    aplicar(grande);
+    try {
+      if (grande && !document.fullscreenElement) await document.documentElement.requestFullscreen?.();
+      if (!grande && document.fullscreenElement) await document.exitFullscreen();
+    } catch { /* navegador não permitiu tela cheia: o layout grande continua */ }
+  });
+})();
+
 const rifaAtual = () => estado.rifas.find((r) => r.id === estado.rifaId);
 const listaNumeros = (nums) => nums.join(', ');
 

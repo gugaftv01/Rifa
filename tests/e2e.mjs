@@ -61,6 +61,13 @@ try {
   assert.equal(await a.locator('#cartelas button').count(), 8);
   assert.match(await a.textContent('#cartela-pos'), /Cartela 1\/8/);
   ok('8 cartelas independentes, escolha discreta no final da página');
+  assert.equal(await a.isVisible('#btn-tela'), true);
+  await a.click('#btn-tela');
+  assert.equal(await a.evaluate(() => document.body.classList.contains('tela-grande')), true);
+  assert.equal(await a.evaluate(() => getComputedStyle(document.querySelector('#grade')).gridTemplateColumns.split(' ').length), 10);
+  await a.click('#btn-tela');
+  assert.equal(await a.evaluate(() => document.body.classList.contains('tela-grande')), false);
+  ok('no computador, o botão "Tela grande" amplia o site e volta ao normal');
   await a.waitForFunction(() => document.querySelectorAll('#grade .num.livre').length === 100);
   await a.screenshot({ path: `${SHOTS}/desktop-inicio.png`, fullPage: false });
 
