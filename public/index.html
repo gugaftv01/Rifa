@@ -14,10 +14,10 @@
   <link rel="preload" as="font" type="font/woff2" href="/fonts/great-vibes.woff2" crossorigin>
   <link rel="preconnect" href="https://firestore.googleapis.com">
   <link rel="preconnect" href="https://www.gstatic.com">
-  <link rel="stylesheet" href="/css/style.css?v=10">
-  <link rel="stylesheet" href="/css/site.css?v=10">
-  <link rel="stylesheet" href="/css/intro.css?v=10">
-  <script src="/js/intro.js?v=10"></script>
+  <link rel="stylesheet" href="/css/style.css?v=11">
+  <link rel="stylesheet" href="/css/site.css?v=11">
+  <link rel="stylesheet" href="/css/intro.css?v=11">
+  <script src="/js/intro.js?v=11"></script>
 </head>
 <body class="site">
   <!-- Abertura animada (some sozinha; toque para pular) -->
@@ -85,7 +85,7 @@
         <button type="button" class="cartao pix" id="pix-btn" hidden>
           <span class="rotulo">Chave Pix</span>
           <strong class="valor" id="pix"></strong>
-          <small>toque para copiar</small>
+          <small id="pix-dica">toque para copiar</small>
         </button>
       </section>
 
@@ -137,7 +137,7 @@
       <h2 id="ok-titulo">Reserva feita!</h2>
       <p id="ok-texto"></p>
       <div class="pix-box" id="ok-pix" hidden>
-        <span>Chave Pix</span>
+        <span id="ok-pix-rotulo">Chave Pix</span>
         <code id="ok-pix-chave"></code>
         <button type="button" class="btn btn-sec btn-peq" id="btn-copiar-pix">Copiar</button>
       </div>
@@ -149,6 +149,6 @@
     </div>
   </dialog>
 
-  <script type="module" src="/js/app.js?v=10"></script>
+  <script type="module" src="/js/app.js?v=11"></script>
 </body>
 </html>

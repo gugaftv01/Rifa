@@ -234,6 +234,6 @@ body.site.com-carrinho { padding-bottom: 116px; }
   padding: .8rem; border-radius: 12px; background: #f4f4f6;
 }
 .pix-box span { width: 100%; font-size: .85rem; color: var(--texto-suave); }
-.pix-box code { flex: 1; font-size: 1rem; font-weight: 700; word-break: break-all; }
+.pix-box code { flex: 1 1 100%; max-height: 4.6em; overflow: auto; font-size: .8rem; font-weight: 700; word-break: break-all; }
 .instrucoes { color: var(--texto-suave); font-size: .95rem; }
 .site .dlg-resumo { background: #f4f4f6; }

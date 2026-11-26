@@ -458,7 +458,7 @@ $('dr-excluir').addEventListener('click', async () => {
 let heroNova = null;
 function desenharPagina() {
   const f = $('form-pagina');
-  ['titulo', 'subtitulo', 'mensagem', 'pix', 'whatsapp', 'instrucoes'].forEach((k) => {
+  ['titulo', 'subtitulo', 'mensagem', 'pix', 'pixCopiaECola', 'whatsapp', 'instrucoes'].forEach((k) => {
     if (document.activeElement !== f.elements[k]) f.elements[k].value = estado.config[k] || '';
   });
   if (heroNova === null) $('pg-hero-prev').src = estado.config.heroImagem || CONFIG_PADRAO.heroImagem;
@@ -485,7 +485,7 @@ $('form-pagina').addEventListener('submit', async (e) => {
   e.preventDefault();
   const f = e.target;
   const dados = {};
-  ['titulo', 'subtitulo', 'mensagem', 'pix', 'whatsapp', 'instrucoes'].forEach((k) => { dados[k] = f.elements[k].value.trim(); });
+  ['titulo', 'subtitulo', 'mensagem', 'pix', 'pixCopiaECola', 'whatsapp', 'instrucoes'].forEach((k) => { dados[k] = f.elements[k].value.trim(); });
   if (!dados.titulo) { toast('Informe um título.', 'aviso'); return; }
   if (heroNova !== null) dados.heroImagem = heroNova;
   dados.atualizadoEm = serverTimestamp();

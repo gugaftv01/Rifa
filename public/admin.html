@@ -6,8 +6,8 @@
   <meta name="robots" content="noindex, nofollow">
   <title>Painel ADM</title>
   <meta name="theme-color" content="#1e2a5a">
-  <link rel="stylesheet" href="/css/style.css?v=10">
-  <link rel="stylesheet" href="/css/admin.css?v=10">
+  <link rel="stylesheet" href="/css/style.css?v=11">
+  <link rel="stylesheet" href="/css/admin.css?v=11">
 </head>
 <body class="adm">
   <!-- Login -->
@@ -130,7 +130,8 @@
           <label>Título (letras grandes) <input name="titulo" maxlength="60" required></label>
           <label>Nomes (letra cursiva) <input name="subtitulo" maxlength="60"></label>
           <label class="larga">Aviso do sorteio (aparece embaixo dos números) <input name="mensagem" maxlength="160"></label>
-          <label>Chave Pix <input name="pix" maxlength="120"></label>
+          <label>Chave Pix (aparece no site) <input name="pix" maxlength="120"></label>
+          <label class="larga">Pix copia e cola (é o que o botão copia) <textarea name="pixCopiaECola" rows="3" maxlength="512"></textarea></label>
           <label>WhatsApp para comprovantes (com DDD) <input name="whatsapp" inputmode="tel" maxlength="20"></label>
           <label class="larga">Instruções de pagamento (aparecem após a reserva) <textarea name="instrucoes" rows="3" maxlength="600"></textarea></label>
           <div class="larga"><button class="btn" type="submit">Salvar página inicial</button></div>
@@ -197,6 +198,6 @@
     </form>
   </dialog>
 
-  <script type="module" src="/js/admin.js?v=10"></script>
+  <script type="module" src="/js/admin.js?v=11"></script>
 </body>
 </html>

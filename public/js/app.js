@@ -32,8 +32,9 @@ onSnapshot(doc(db, 'config/site'), (snap) => {
   document.title = c.subtitulo ? `${c.titulo} · ${c.subtitulo}` : c.titulo;
   $('mensagem').textContent = c.mensagem || '';
   $('mensagem').hidden = !c.mensagem;
-  $('pix').textContent = c.pix || '';
-  $('pix-btn').hidden = !c.pix;
+  $('pix').textContent = c.pix || 'Copia e cola';
+  $('pix-btn').hidden = !c.pix && !c.pixCopiaECola;
+  $('pix-dica').textContent = c.pixCopiaECola ? 'toque para copiar o Pix copia e cola' : 'toque para copiar';
   const foto = c.heroImagem || CONFIG_PADRAO.heroImagem;
   for (const id of ['hero-img', 'fundo-blur']) {
     if ($(id).getAttribute('src') !== foto) $(id).src = foto;
@@ -184,7 +185,11 @@ $('grade').addEventListener('click', (e) => {
 
 /* ---------- Pix ---------- */
 async function copiarPix() {
-  try { await navigator.clipboard.writeText(estado.config.pix); toast('Chave Pix copiada!'); }
+  const { pix, pixCopiaECola } = estado.config;
+  try {
+    await navigator.clipboard.writeText(pixCopiaECola || pix);
+    toast(pixCopiaECola ? 'Pix copia e cola copiado! Cole no app do banco.' : 'Chave Pix copiada!');
+  }
   catch { toast('Não foi possível copiar. Selecione a chave manualmente.', 'aviso'); }
 }
 $('pix-btn').addEventListener('click', copiarPix);
@@ -297,8 +302,9 @@ function mostrarResultado(r, ok, falhou, nome, telefone) {
     $('ok-titulo').textContent = 'Reserva feita! 🎉';
     $('ok-texto').innerHTML = `${escapar(nome)}, seus números na <strong>${pos}</strong>: <strong>${listaNumeros(ok)}</strong>. Total: <strong>${total}</strong>.`
       + (falhou.length ? `<br><span class="erro">Os números ${listaNumeros(falhou)} já tinham sido reservados por outra pessoa e não entraram.</span>` : '');
-    $('ok-pix').hidden = !c.pix;
-    $('ok-pix-chave').textContent = c.pix || '';
+    $('ok-pix').hidden = !c.pix && !c.pixCopiaECola;
+    $('ok-pix-rotulo').textContent = c.pixCopiaECola ? 'Pix copia e cola (cole no app do banco)' : 'Chave Pix';
+    $('ok-pix-chave').textContent = c.pixCopiaECola || c.pix || '';
     $('ok-instrucoes').textContent = c.instrucoes || '';
     const link = linkWhatsApp(c.whatsapp, mensagemWhatsApp({ c, r, pos, ok, nome, telefone, total }));
     $('ok-whats').hidden = !link;
