@@ -115,28 +115,38 @@ function desenharRifa() {
   desenharCarrinho();
 }
 
-// Coração ao lado da dica: vai mostrando, um por vez, os números livres da cartela.
-let rodizio = { lista: [], i: 0 };
+// Coração ao lado da dica: passa bem rápido pelos números livres da cartela,
+// depois fica só o coração piscando de leve; e repete.
+const rodizio = { lista: [], timer: null };
 function atualizarRodizio(r) {
   const total = Number(r.totalNumeros) || 0;
   const livres = [];
   for (let n = 1; n <= total; n++) if (!estado.ocupados.has(n)) livres.push(n);
   rodizio.lista = livres;
-  if (rodizio.i >= livres.length) rodizio.i = 0;
   $('dica-coracao').hidden = !estado.numerosCarregados || !livres.length;
-  if (livres.length && !$('dica-num').textContent) mostrarRodizio();
+  if (livres.length && !rodizio.timer) varrerNumeros();
 }
-function mostrarRodizio() {
-  const { lista } = rodizio;
-  if (!lista.length) return;
+function varrerNumeros() {
+  const lista = rodizio.lista;
   const el = $('dica-num');
-  el.textContent = lista[rodizio.i % lista.length];
-  el.classList.remove('troca');
-  void el.offsetWidth; // reinicia a animação de troca
-  el.classList.add('troca');
-  rodizio.i = (rodizio.i + 1) % lista.length;
+  const coracao = $('dica-coracao');
+  if (!lista.length) { rodizio.timer = null; return; }
+  coracao.classList.remove('descansando');
+  const passo = Math.max(1, Math.ceil(lista.length / 30)); // no máximo ~30 trocas (~2 s)
+  let i = 0;
+  const tique = () => {
+    if (i < lista.length) {
+      el.textContent = lista[i];
+      i += passo;
+      rodizio.timer = setTimeout(tique, 70);
+    } else {
+      el.textContent = '';
+      coracao.classList.add('descansando');
+      rodizio.timer = setTimeout(varrerNumeros, 5000);
+    }
+  };
+  tique();
 }
-setInterval(mostrarRodizio, 1100);
 
 function desenharGrade(r) {
   atualizarRodizio(r);
