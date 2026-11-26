@@ -20,22 +20,6 @@ const estado = {
   pararNumeros: null,
 };
 
-// Letras da dica "Toque no coração para escolher" em movimento de onda.
-(() => {
-  const dica = $('dica');
-  const texto = dica.textContent;
-  dica.setAttribute('aria-label', texto);
-  dica.textContent = '';
-  Array.from(texto).forEach((ch, i) => {
-    const s = document.createElement('span');
-    s.className = 'onda';
-    s.setAttribute('aria-hidden', 'true');
-    s.textContent = ch;
-    s.style.setProperty('--i', i);
-    dica.appendChild(s);
-  });
-})();
-
 const rifaAtual = () => estado.rifas.find((r) => r.id === estado.rifaId);
 const listaNumeros = (nums) => nums.join(', ');
 
