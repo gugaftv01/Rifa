@@ -290,21 +290,15 @@ body.cartela-breve .dica, body.cartela-breve .legenda-site { display: none; }
   font: 800 .9rem / 1.2 var(--titulo); cursor: pointer; box-shadow: 0 8px 20px rgba(232, 23, 60, .35);
 }
 
-/* ---------- Avisos de carregamento e de internet (vermelho piscando) ---------- */
+/* ---------- Aviso de internet (vermelho piscando) ---------- */
 @keyframes alerta-pisca {
   0%, 100% { background: #e3121f; box-shadow: 0 0 0 4px rgba(227, 18, 31, .35), 0 12px 30px rgba(227, 18, 31, .5); }
   50% { background: #7a0a12; box-shadow: 0 0 0 2px rgba(227, 18, 31, .2), 0 8px 20px rgba(0, 0, 0, .4); }
 }
-.aviso-carregando {
-  grid-column: 1 / -1; display: grid; gap: 8px; margin: 8px 0; padding: 26px 18px; border-radius: 22px;
-  color: #fff; text-align: center; animation: alerta-pisca 1.1s ease-in-out infinite;
-}
-.aviso-carregando strong { font: 800 clamp(1.4rem, 6.5vw, 2rem) / 1.15 var(--titulo); }
-.aviso-carregando span { font-weight: 700; font-size: 1.02rem; }
 .aviso-rede {
   position: fixed; top: max(10px, env(safe-area-inset-top)); left: 50%; z-index: 60; transform: translateX(-50%);
   width: min(540px, calc(100% - 20px)); padding: 14px 18px; border-radius: 18px; color: #fff; text-align: center;
   font: 800 1.02rem / 1.35 var(--titulo); animation: alerta-pisca 1.1s ease-in-out infinite;
 }
-@media (prefers-reduced-motion: reduce) { .aviso-carregando, .aviso-rede { animation: none; background: #e3121f; } }
+@media (prefers-reduced-motion: reduce) { .aviso-rede { animation: none; background: #e3121f; } }
 .cartao .selo:empty { display: none; }

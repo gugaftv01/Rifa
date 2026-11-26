@@ -46,11 +46,6 @@ const estado = {
 })();
 
 /* ---------- Aviso de internet ---------- */
-// Se nada carregar em 4 s, avisa que a internet está lenta.
-estado.timerLento = setTimeout(() => {
-  const el = $('aviso-lento');
-  if (el && !estado.numerosCarregados) el.textContent = 'Sua internet está lenta. Os números vão aparecer já já, não feche a página 🙏';
-}, 4000);
 function avisarRede() {
   const el = $('aviso-rede');
   let msg = '';
@@ -213,15 +208,7 @@ function varrerNumeros() {
 function desenharGrade(r) {
   atualizarRodizio(r);
   if (!estado.numerosCarregados) {
-    $('grade').innerHTML = `<div class="aviso-carregando" role="status">
-      <strong>⏳ Carregando os números…</strong>
-      <span id="aviso-lento">Aguarde um pouquinho.</span>
-    </div>`;
-    clearTimeout(estado.timerLento);
-    estado.timerLento = setTimeout(() => {
-      const el = $('aviso-lento');
-      if (el && !estado.numerosCarregados) el.textContent = 'Sua internet está lenta. Os números vão aparecer já já, não feche a página 🙏';
-    }, 4000);
+    $('grade').innerHTML = '<p class="carregando">Carregando números…</p>';
     return;
   }
   const { ini, fim } = faixa(r);
