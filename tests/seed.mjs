@@ -27,7 +27,7 @@ if (!(await getDoc(doc(db, 'config/site'))).exists()) {
     titulo: 'Chá Rifa de Casa Nova',
     subtitulo: '',
     mensagem: 'O sorteio será realizado assim que acabarem todos os números',
-    heroImagem: '/img/foto-2.jpg',
+    heroImagem: '/img/foto-3.jpg',
     pix: '', whatsapp: '',
     instrucoes: 'Após reservar, faça o pagamento via Pix e envie o comprovante pelo WhatsApp. Seu número será confirmado assim que recebermos.',
   });
