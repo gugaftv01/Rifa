@@ -1,6 +1,7 @@
 # Rifa
 
-Site de rifas com 8 rifas independentes, números em tempo real e painel administrativo.
+Chá Rifa em formato de cartaz: foto do casal ao fundo, cartela de corações (8 cartelas
+independentes de 100 números), reservas em tempo real e painel administrativo.
 Hospedado no Firebase (projeto `rifa-gugaftv`).
 
 - **Site:** https://rifa-gugaftv.web.app
@@ -19,14 +20,14 @@ Hospedado no Firebase (projeto `rifa-gugaftv`).
 
 | Caminho | Conteúdo | Quem lê | Quem grava |
 |---|---|---|---|
-| `config/site` | textos, foto principal, PIX, WhatsApp | todos | ADM |
-| `galeria/{id}` | fotos da galeria | todos | ADM |
+| `config/site` | título, nomes, aviso do sorteio, foto de fundo, Pix, WhatsApp | todos | ADM |
 | `rifas/{rifaId}` | nome, prêmio, valor, quantidade de números | todos | ADM |
 | `rifas/{rifaId}/numeros/{n}` | status público do número (sem dados pessoais) | todos | visitante cria (nunca sobrescreve); ADM altera |
 | `reservas/{rifaId}_{n}` | nome e WhatsApp do comprador | só ADM | visitante cria junto com o número; ADM altera |
 | `admins/{uid}` | quem é administrador | o próprio usuário | só pelo console do Firebase |
 
-Número sem documento em `numeros` = **disponível (verde)**. Com documento = **indisponível (vermelho)**.
+Número sem documento em `numeros` = **disponível** (coração preto). Com documento =
+**vendido/reservado** (coração com X vermelho). Os números escolhidos pelo visitante ficam em vermelho.
 
 ### Por que não dá para reservar o mesmo número duas vezes
 
@@ -39,8 +40,8 @@ de cada vez por documento, então, quando duas pessoas clicam juntas, só uma co
 - **Resumo:** vendidos, reservados, disponíveis e valores por rifa.
 - **Números:** toque num número para vender, reservar, confirmar pagamento ou liberar.
 - **Reservas:** lista com nome e WhatsApp, filtros e exportação CSV.
-- **Rifas:** criar, editar (prêmio, valor, quantidade de números, data, imagem), ocultar ou excluir.
-- **Página inicial:** título, textos, foto principal, galeria, PIX e WhatsApp.
+- **Rifas:** criar, editar (prêmios, valor, quantidade de números, data, imagem), ocultar ou excluir.
+- **Página inicial:** título, nomes, aviso do sorteio, foto de fundo, Pix e WhatsApp.
 - **Conta:** trocar a senha.
 
 ### Criar um administrador

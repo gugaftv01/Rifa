@@ -1,9 +1,9 @@
-// Cria os dados iniciais (página inicial, 8 rifas e galeria) sem sobrescrever o que já existe.
+// Cria os dados iniciais (página inicial e 8 rifas) sem sobrescrever o que já existe.
 // Uso: node seed.mjs <email-adm> <senha-adm> [--emulador]
 // O usuário precisa já estar cadastrado em /admins (as regras exigem isso).
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInWithEmailAndPassword, connectAuthEmulator } from 'firebase/auth';
-import { getFirestore, connectFirestoreEmulator, doc, getDoc, getDocs, setDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { getFirestore, connectFirestoreEmulator, doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 const [email, senha] = process.argv.slice(2);
 const emulador = process.argv.includes('--emulador');
@@ -24,13 +24,12 @@ await signInWithEmailAndPassword(auth, email, senha);
 
 if (!(await getDoc(doc(db, 'config/site'))).exists()) {
   await setDoc(doc(db, 'config/site'), {
-    titulo: 'Nossa Rifa',
-    subtitulo: 'Escolha seus números da sorte e ajude a realizar o nosso sonho!',
-    mensagem: 'Cada número comprado é um pedacinho do nosso futuro juntos. Obrigado pelo carinho!',
-    heroImagem: '/img/foto-principal.jpg',
+    titulo: 'Chá Rifa de Casa Nova',
+    subtitulo: '',
+    mensagem: 'O sorteio será realizado assim que acabarem todos os números',
+    heroImagem: '/img/foto-2.jpg',
     pix: '', whatsapp: '',
-    instrucoes: 'Após reservar, faça o pagamento via PIX e envie o comprovante pelo WhatsApp. Seu número será confirmado assim que recebermos.',
-    rodape: 'Obrigado por participar! ❤',
+    instrucoes: 'Após reservar, faça o pagamento via Pix e envie o comprovante pelo WhatsApp. Seu número será confirmado assim que recebermos.',
   });
   console.log('config/site criado');
 }
@@ -45,10 +44,5 @@ for (let i = 1; i <= 8; i++) {
   console.log(`rifa-${i} criada`);
 }
 
-if ((await getDocs(collection(db, 'galeria'))).empty) {
-  const fotos = ['/img/foto-2.jpg', '/img/foto-3.jpg', '/img/foto-4.jpg', '/img/foto-5.jpg'];
-  for (const [ordem, src] of fotos.entries()) await setDoc(doc(db, 'galeria', `foto-${ordem + 1}`), { src, ordem });
-  console.log('galeria criada');
-}
 console.log('ok');
 process.exit(0);

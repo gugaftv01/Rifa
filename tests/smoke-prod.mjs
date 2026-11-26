@@ -20,11 +20,10 @@ try {
     p.on('pageerror', (e) => problemas.push(`${nome}: ${e.message}`));
     p.on('console', (m) => { if (/Content Security Policy|Refused to/i.test(m.text())) problemas.push(`${nome} CSP: ${m.text()}`); });
     await p.goto(`${BASE}/`);
-    await p.waitForSelector('.aba', { timeout: 30000 });
-    assert.equal(await p.locator('.aba').count(), 8);
+    await p.waitForSelector('#cartelas button', { timeout: 30000 });
+    assert.equal(await p.locator('#cartelas button').count(), 8);
     await p.waitForFunction(() => document.querySelectorAll('#grade .num').length === 100, null, { timeout: 30000 });
-    await p.waitForFunction(() => document.querySelectorAll('#galeria img').length === 4, null, { timeout: 30000 });
-    ok(`${nome}: 8 rifas, 100 números na Rifa 1 e galeria com 4 fotos carregados do banco real`);
+    ok(`${nome}: 8 cartelas e 100 números na cartela 1 carregados do banco real`);
 
     // Dados privados dos compradores não podem ser lidos por visitantes.
     const leitura = await p.evaluate(async () => {

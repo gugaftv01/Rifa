@@ -3,8 +3,7 @@ rules_version = '2';
 // Regras de segurança do site de rifas.
 //
 // Modelo de dados:
-//   config/site                      -> textos e imagem principal da página inicial (público)
-//   galeria/{id}                     -> fotos da galeria da página inicial (público)
+//   config/site                      -> textos, foto de fundo e Pix da página inicial (público)
 //   rifas/{rifaId}                   -> dados de cada rifa (público)
 //   rifas/{rifaId}/numeros/{numero}  -> status PÚBLICO de cada número ocupado (sem dados pessoais).
 //                                       Número sem documento = disponível.
@@ -50,11 +49,6 @@ service cloud.firestore {
     }
 
     match /config/{docId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    match /galeria/{fotoId} {
       allow read: if true;
       allow write: if isAdmin();
     }

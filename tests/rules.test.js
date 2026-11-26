@@ -123,7 +123,6 @@ test('visitante e usuário logado sem permissão NÃO executam ações de ADM', 
     await assertFails(updateDoc(doc(db, 'rifas/rifa-1'), { totalNumeros: 1000 }));
     await assertFails(setDoc(doc(db, 'rifas/nova'), { nome: 'x' }));
     await assertFails(setDoc(doc(db, 'config/site'), { titulo: 'hack' }));
-    await assertFails(setDoc(doc(db, 'galeria/x'), { src: 'x' }));
     await assertFails(setDoc(doc(db, 'admins/qualquer'), { email: 'x' }));
   }
 });
@@ -137,7 +136,6 @@ test('ADM gerencia rifas, números, reservas e página inicial', async () => {
   await assertSucceeds(deleteDoc(doc(db, 'reservas/rifa-1_7')));
   await assertSucceeds(setDoc(doc(db, 'rifas/rifa-9'), { nome: 'Nova', totalNumeros: 200, preco: 20, ativa: true, ordem: 9 }));
   await assertSucceeds(setDoc(doc(db, 'config/site'), { titulo: 'Novo título' }));
-  await assertSucceeds(setDoc(doc(db, 'galeria/f1'), { src: '/img/a.jpg', ordem: 1 }));
   // Depois de liberado, o número volta a ficar disponível para visitantes.
   await assertSucceeds(reservar(visitante(), 'rifa-1', 7));
 });

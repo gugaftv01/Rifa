@@ -1,18 +1,16 @@
 // Funções utilitárias compartilhadas.
 
 export const CONFIG_PADRAO = {
-  titulo: 'Nossa Rifa',
-  subtitulo: 'Escolha seus números da sorte e ajude a realizar o nosso sonho!',
-  mensagem: 'Cada número comprado é um pedacinho do nosso futuro juntos. Obrigado pelo carinho!',
-  heroImagem: '/img/foto-principal.jpg',
+  titulo: 'Chá Rifa de Casa Nova',
+  subtitulo: '',
+  mensagem: 'O sorteio será realizado assim que acabarem todos os números',
+  heroImagem: '/img/foto-2.jpg',
   pix: '',
   whatsapp: '',
-  instrucoes: 'Após reservar, faça o pagamento via PIX e envie o comprovante pelo WhatsApp. Seu número será confirmado assim que recebermos.',
+  instrucoes: 'Após reservar, faça o pagamento via Pix e envie o comprovante pelo WhatsApp. Seu número será confirmado assim que recebermos.',
 };
 
 export const brl = (v) => (Number(v) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-
-export const pad = (n, total) => String(n).padStart(String(total).length, '0');
 
 export const soDigitos = (s) => String(s || '').replace(/\D/g, '');
 

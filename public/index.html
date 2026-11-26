@@ -3,100 +3,92 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Nossa Rifa</title>
-  <meta name="description" content="Escolha seus números da sorte e participe das nossas rifas.">
-  <meta name="theme-color" content="#1e2a5a">
-  <meta property="og:title" content="Nossa Rifa">
+  <title>Chá Rifa de Casa Nova · Marcela &amp; V.Gustavo</title>
+  <meta name="description" content="Escolha seus números da sorte e participe da nossa Chá Rifa de Casa Nova!">
+  <meta name="theme-color" content="#0f0f10">
+  <meta property="og:title" content="Chá Rifa de Casa Nova · Marcela & V.Gustavo">
   <meta property="og:description" content="Escolha seus números da sorte e participe!">
-  <meta property="og:image" content="/img/foto-principal.jpg">
-  <link rel="preload" as="image" href="/img/foto-principal.jpg">
+  <meta property="og:image" content="https://rifa-gugaftv.web.app/img/foto-2.jpg">
+  <link rel="preload" as="image" href="/img/foto-2.jpg">
+  <link rel="preload" as="font" type="font/woff2" href="/fonts/montserrat-800.woff2" crossorigin>
+  <link rel="preload" as="font" type="font/woff2" href="/fonts/great-vibes.woff2" crossorigin>
   <link rel="preconnect" href="https://firestore.googleapis.com">
   <link rel="preconnect" href="https://www.gstatic.com">
   <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/site.css">
 </head>
-<body>
-  <header class="hero">
-    <div class="hero-inner container">
-      <figure class="hero-foto">
-        <img id="hero-img" src="/img/foto-principal.jpg" alt="Foto do casal" width="960" height="1280" fetchpriority="high">
-      </figure>
-      <div class="hero-texto">
-        <p class="selo">Rifa oficial</p>
-        <h1 id="titulo">Nossa Rifa</h1>
-        <p class="subtitulo" id="subtitulo">Escolha seus números da sorte e ajude a realizar o nosso sonho!</p>
-        <p class="mensagem" id="mensagem"></p>
-        <div class="hero-resumo" id="hero-resumo" aria-live="polite"></div>
-        <a class="btn btn-grande" href="#rifas">Escolher meus números</a>
+<body class="site">
+  <!-- Fundo desfocado (aparece nas laterais em telas largas) -->
+  <div class="fundo-pagina" aria-hidden="true"><img id="fundo-blur" src="/img/foto-2.jpg" alt=""></div>
+
+  <div class="poster">
+    <!-- Foto do casal, fixa atrás do cartaz -->
+    <div class="poster-foto"><img id="hero-img" src="/img/foto-2.jpg" alt="Foto do casal" width="960" height="1280" fetchpriority="high"></div>
+
+    <header class="topo">
+      <div class="moldura">
+        <span class="ponta esq" aria-hidden="true"></span>
+        <span class="ponta dir" aria-hidden="true"></span>
+        <h1 id="titulo">Chá Rifa de Casa Nova</h1>
+        <p class="nomes" id="subtitulo">Marcela &amp; V.Gustavo</p>
       </div>
-    </div>
-  </header>
+    </header>
 
-  <main>
-    <section id="rifas" class="secao container" aria-labelledby="rifas-titulo">
-      <h2 id="rifas-titulo">Escolha a rifa</h2>
-      <nav class="abas" id="abas" aria-label="Rifas disponíveis"></nav>
+    <main class="conteudo" id="cartela">
+      <p class="dica" id="dica">Toque nos corações para escolher</p>
 
-      <article class="rifa-card" id="rifa-card" hidden>
-        <div class="rifa-info">
-          <img id="rifa-img" class="rifa-img" alt="" hidden>
-          <div>
-            <h3 id="rifa-nome"></h3>
-            <p class="rifa-premio" id="rifa-premio"></p>
-            <p class="rifa-desc" id="rifa-desc"></p>
-            <ul class="rifa-dados">
-              <li><span>Valor por número</span><strong id="rifa-preco"></strong></li>
-              <li><span>Sorteio</span><strong id="rifa-data"></strong></li>
-              <li><span>Disponíveis</span><strong id="rifa-disp"></strong></li>
-            </ul>
-            <div class="progresso" aria-hidden="true"><div class="progresso-barra" id="rifa-barra"></div></div>
-            <p class="progresso-txt" id="rifa-progresso"></p>
-          </div>
+      <div class="grade" id="grade" role="group" aria-label="Números da cartela">
+        <p class="carregando" id="carregando">Carregando…</p>
+      </div>
+
+      <div class="legenda-site" aria-hidden="true">
+        <span><i class="mini"></i>Disponível</span>
+        <span><i class="mini x"></i>Vendido</span>
+        <span><i class="mini escolhido"></i>Escolhido</span>
+      </div>
+
+      <section class="infos" aria-label="Informações da rifa">
+        <div class="pilula">
+          <span id="mensagem">O sorteio será realizado assim que acabarem todos os números</span>
+          <strong id="cartela-pos"></strong>
+          <span class="data-sorteio" id="data-sorteio" hidden></span>
         </div>
-
-        <div class="ferramentas">
-          <div class="legenda">
-            <span><i class="bolinha livre"></i>Disponível</span>
-            <span><i class="bolinha ocupado"></i>Vendido / reservado</span>
-            <span><i class="bolinha meu"></i>Selecionado</span>
-          </div>
-          <div class="filtros">
-            <div class="segmentado" role="group" aria-label="Filtrar números">
-              <button type="button" data-filtro="todos" class="ativo">Todos</button>
-              <button type="button" data-filtro="livres">Disponíveis</button>
-              <button type="button" data-filtro="ocupados">Vendidos</button>
-            </div>
-            <input type="search" id="busca" inputmode="numeric" placeholder="Buscar número" aria-label="Buscar número">
-          </div>
+        <div class="pilula premios" id="premios-box" hidden>
+          <strong>Prêmios</strong>
+          <p id="premios"></p>
         </div>
+        <div class="duplas">
+          <div class="pilula">
+            <span>Cada número é</span>
+            <strong id="preco"></strong>
+          </div>
+          <button type="button" class="pilula pix" id="pix-btn" hidden>
+            <span>Pix</span>
+            <strong id="pix"></strong>
+            <small>toque para copiar</small>
+          </button>
+        </div>
+      </section>
 
-        <div class="grade" id="grade" role="group" aria-label="Números da rifa"></div>
-        <p class="vazio" id="grade-vazia" hidden>Nenhum número encontrado.</p>
-      </article>
-
-      <p class="carregando" id="carregando">Carregando rifas…</p>
-    </section>
-
-    <section class="secao container galeria-secao" id="galeria-secao" hidden aria-labelledby="galeria-titulo">
-      <h2 id="galeria-titulo">Nossos momentos</h2>
-      <div class="galeria" id="galeria"></div>
-    </section>
-  </main>
-
-  <footer class="rodape">
-    <p id="rodape-texto">Obrigado por participar! ❤</p>
-  </footer>
+      <!-- Escolha de cartela: discreta, bem no final -->
+      <nav class="cartelas" id="cartelas-nav" aria-label="Escolher outra cartela" hidden>
+        <p>Outras cartelas</p>
+        <div id="cartelas"></div>
+      </nav>
+    </main>
+  </div>
 
   <!-- Barra fixa com os números selecionados -->
   <div class="carrinho" id="carrinho" hidden>
-    <div class="carrinho-inner container">
-      <div>
+    <div class="carrinho-inner">
+      <div class="carrinho-info">
         <strong id="carrinho-qtd"></strong>
         <span id="carrinho-total"></span>
         <div class="carrinho-nums" id="carrinho-nums"></div>
       </div>
       <div class="carrinho-acoes">
         <button type="button" class="btn btn-sec" id="btn-limpar">Limpar</button>
-        <button type="button" class="btn" id="btn-reservar">Reservar</button>
+        <button type="button" class="btn btn-reservar" id="btn-reservar">Reservar</button>
       </div>
     </div>
   </div>
@@ -115,7 +107,7 @@
       <p class="erro" id="form-erro" role="alert"></p>
       <div class="dlg-acoes">
         <button type="button" class="btn btn-sec" id="btn-cancelar">Cancelar</button>
-        <button type="submit" class="btn" id="btn-confirmar">Confirmar reserva</button>
+        <button type="submit" class="btn btn-reservar" id="btn-confirmar">Confirmar reserva</button>
       </div>
     </form>
   </dialog>
@@ -123,10 +115,10 @@
   <!-- Resultado da reserva -->
   <dialog id="dlg-ok" class="dialogo">
     <div>
-      <h2 id="ok-titulo">Reserva feita! 🎉</h2>
+      <h2 id="ok-titulo">Reserva feita!</h2>
       <p id="ok-texto"></p>
-      <div class="pix" id="ok-pix" hidden>
-        <span>Chave PIX</span>
+      <div class="pix-box" id="ok-pix" hidden>
+        <span>Chave Pix</span>
         <code id="ok-pix-chave"></code>
         <button type="button" class="btn btn-sec btn-peq" id="btn-copiar-pix">Copiar</button>
       </div>

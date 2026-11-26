@@ -10,7 +10,7 @@ import {
   writeBatch, serverTimestamp, query, where, deleteField,
 } from 'https://www.gstatic.com/firebasejs/13.4.0/firebase-firestore.js';
 import {
-  CONFIG_PADRAO, brl, pad, soDigitos, formatarTelefone, linkWhatsApp, escapar, toast, prepararImagem,
+  CONFIG_PADRAO, brl, soDigitos, formatarTelefone, linkWhatsApp, escapar, toast, prepararImagem,
 } from './util.js';
 
 const auth = getAuth(app);
@@ -21,7 +21,6 @@ const estado = {
   rifas: [],
   reservas: [],     // todas as reservas (dados privados)
   config: { ...CONFIG_PADRAO },
-  galeria: [],
   numRifa: null,
   numFiltro: 'todos',
   parar: [],
@@ -100,10 +99,6 @@ function iniciarOuvintes() {
   estado.parar.push(onSnapshot(doc(db, 'config/site'), (s) => {
     estado.config = { ...CONFIG_PADRAO, ...(s.exists() ? s.data() : {}) };
     desenharPagina();
-  }, erro));
-  estado.parar.push(onSnapshot(collection(db, 'galeria'), (s) => {
-    estado.galeria = s.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0));
-    desenharGaleria();
   }, erro));
 }
 
@@ -195,7 +190,7 @@ function desenharNumeros() {
     if (estado.numFiltro !== 'todos' && estado.numFiltro !== st) continue;
     const classe = st === 'vendido' ? 'ocupado' : st === 'reservado' ? 'reservado' : 'livre';
     const titulo = res ? `${res.nome} · ${formatarTelefone(res.telefone)}` : 'Disponível';
-    partes.push(`<button type="button" class="num ${classe}" data-n="${n}" title="${escapar(titulo)}">${pad(n, r.totalNumeros)}</button>`);
+    partes.push(`<button type="button" class="num ${classe}" data-n="${n}" title="${escapar(titulo)}">${n}</button>`);
   }
   $('num-grade').innerHTML = partes.join('') || '<p class="vazio">Nenhum número neste filtro.</p>';
 }
@@ -210,7 +205,7 @@ function abrirNumero(rifaId, n) {
   const r = rifaPorId(rifaId);
   const res = estado.reservas.find((x) => x.rifaId === rifaId && x.numero === n);
   numAtual = { rifaId, n };
-  $('dn-titulo').textContent = `${r.nome} · Número ${pad(n, r.totalNumeros)}`;
+  $('dn-titulo').textContent = `${r.nome} · Número ${n}`;
   $('dn-erro').textContent = '';
   $('dn-nome').value = res?.nome || '';
   $('dn-tel').value = res ? formatarTelefone(res.telefone) : '';
@@ -305,7 +300,7 @@ function desenharReservas() {
     const whats = linkWhatsApp(x.telefone, `Olá ${x.nome}! Sobre o número ${x.numero} da ${r?.nome || 'rifa'}:`);
     return `<tr>
       <td>${escapar(r?.nome || x.rifaId)}</td>
-      <td><strong>${r ? pad(x.numero, r.totalNumeros) : x.numero}</strong></td>
+      <td><strong>${x.numero}</strong></td>
       <td>${escapar(x.nome)}</td>
       <td>${whats ? `<a href="${whats}" target="_blank" rel="noopener">${escapar(formatarTelefone(x.telefone))}</a>` : ''}</td>
       <td><span class="etiqueta ${x.status === 'vendido' ? 'vendido' : 'reservado'}">${x.status === 'vendido' ? 'Vendido' : 'Reservado'}</span></td>
@@ -349,7 +344,7 @@ function desenharRifas() {
     return `<article class="rifa-adm">
       <h3>${escapar(r.nome)}</h3>
       ${r.ativa === false ? '<p class="inativa">Oculta no site</p>' : ''}
-      <p>${escapar(r.premio || 'Prêmio não definido')}</p>
+      <p class="premio">${escapar(r.premio || 'Prêmios não definidos')}</p>
       <p>${r.totalNumeros} números · ${brl(r.preco)} cada</p>
       <p>${s.vendidos} vendidos · ${s.reservados} reservados · ${s.livres} livres</p>
       <div class="rifa-adm-acoes">
@@ -463,7 +458,7 @@ $('dr-excluir').addEventListener('click', async () => {
 let heroNova = null;
 function desenharPagina() {
   const f = $('form-pagina');
-  ['titulo', 'subtitulo', 'mensagem', 'pix', 'whatsapp', 'instrucoes', 'rodape'].forEach((k) => {
+  ['titulo', 'subtitulo', 'mensagem', 'pix', 'whatsapp', 'instrucoes'].forEach((k) => {
     if (document.activeElement !== f.elements[k]) f.elements[k].value = estado.config[k] || '';
   });
   if (heroNova === null) $('pg-hero-prev').src = estado.config.heroImagem || CONFIG_PADRAO.heroImagem;
@@ -490,7 +485,7 @@ $('form-pagina').addEventListener('submit', async (e) => {
   e.preventDefault();
   const f = e.target;
   const dados = {};
-  ['titulo', 'subtitulo', 'mensagem', 'pix', 'whatsapp', 'instrucoes', 'rodape'].forEach((k) => { dados[k] = f.elements[k].value.trim(); });
+  ['titulo', 'subtitulo', 'mensagem', 'pix', 'whatsapp', 'instrucoes'].forEach((k) => { dados[k] = f.elements[k].value.trim(); });
   if (!dados.titulo) { toast('Informe um título.', 'aviso'); return; }
   if (heroNova !== null) dados.heroImagem = heroNova;
   dados.atualizadoEm = serverTimestamp();
@@ -499,51 +494,4 @@ $('form-pagina').addEventListener('submit', async (e) => {
     heroNova = null;
     toast('Página inicial atualizada!');
   } catch (err) { toast('Erro ao salvar: ' + err.message, 'erro'); }
-});
-
-function desenharGaleria() {
-  $('gal-adm').innerHTML = estado.galeria.map((g, i) => `
-    <div class="gal-item">
-      <img src="${escapar(g.src)}" alt="" loading="lazy">
-      <div>
-        <button type="button" data-gal="sobe" data-i="${i}" ${i === 0 ? 'disabled' : ''} aria-label="Mover para a esquerda">◀</button>
-        <button type="button" data-gal="desce" data-i="${i}" ${i === estado.galeria.length - 1 ? 'disabled' : ''} aria-label="Mover para a direita">▶</button>
-        <button type="button" class="perigo" data-gal="apagar" data-i="${i}">Remover</button>
-      </div>
-    </div>`).join('') || '<p class="vazio">Sem fotos na galeria.</p>';
-}
-
-$('gal-adm').addEventListener('click', async (e) => {
-  const b = e.target.closest('[data-gal]');
-  if (!b) return;
-  const i = Number(b.dataset.i);
-  const g = estado.galeria[i];
-  try {
-    if (b.dataset.gal === 'apagar') {
-      if (!confirm('Remover esta foto da galeria?')) return;
-      await deleteDoc(doc(db, 'galeria', g.id));
-    } else {
-      const j = b.dataset.gal === 'sobe' ? i - 1 : i + 1;
-      const outra = estado.galeria[j];
-      const batch = writeBatch(db);
-      batch.update(doc(db, 'galeria', g.id), { ordem: j });
-      batch.update(doc(db, 'galeria', outra.id), { ordem: i });
-      // Normaliza a ordem das demais fotos.
-      estado.galeria.forEach((x, k) => { if (k !== i && k !== j && x.ordem !== k) batch.update(doc(db, 'galeria', x.id), { ordem: k }); });
-      await batch.commit();
-    }
-  } catch (err) { toast('Erro: ' + err.message, 'erro'); }
-});
-
-$('gal-arq').addEventListener('change', async (e) => {
-  const arquivos = [...e.target.files];
-  e.target.value = '';
-  let ordem = estado.galeria.length;
-  for (const arq of arquivos) {
-    try {
-      const src = await prepararImagem(arq, 1400, 700_000);
-      await addDoc(collection(db, 'galeria'), { src, ordem: ordem++, criadoEm: serverTimestamp() });
-    } catch (err) { toast(`Erro em ${arq.name}: ${err.message}`, 'erro'); }
-  }
-  if (arquivos.length) toast('Fotos adicionadas!');
 });

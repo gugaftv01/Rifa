@@ -52,14 +52,16 @@ try {
   const erros = [];
   a.on('pageerror', (e) => erros.push(e.message));
   await a.goto(`${BASE}/?emulador`);
-  await a.waitForSelector('.aba');
-  const foto = await a.$eval('#hero-img', (img) => ({ w: img.naturalWidth, h: img.naturalHeight, cw: img.clientWidth, ch: img.clientHeight }));
+  await a.waitForSelector('#cartelas button');
+  await a.waitForFunction(() => document.querySelector('#hero-img').naturalWidth > 0);
+  const foto = await a.$eval('#hero-img', (img) => ({ w: img.naturalWidth, h: img.naturalHeight, ajuste: getComputedStyle(img).objectFit }));
   assert.equal(foto.w, 960);
-  assert.ok(Math.abs(foto.cw / foto.ch - foto.w / foto.h) < 0.02, 'foto distorcida');
-  ok(`foto principal carregada em ${foto.w}x${foto.h}, exibida em ${foto.cw}x${foto.ch} sem distorção`);
-  assert.equal(await a.locator('.aba').count(), 8);
-  ok('8 rifas aparecem no site');
-  assert.equal(await a.locator('#grade .num.livre').count(), 100);
+  assert.ok(['cover', 'contain'].includes(foto.ajuste), 'foto pode ser distorcida: object-fit ' + foto.ajuste);
+  ok(`foto de fundo carregada em ${foto.w}x${foto.h} com proporção preservada (object-fit: ${foto.ajuste})`);
+  assert.equal(await a.locator('#cartelas button').count(), 8);
+  assert.match(await a.textContent('#cartela-pos'), /Cartela 1\/8/);
+  ok('8 cartelas independentes, escolha discreta no final da página');
+  await a.waitForFunction(() => document.querySelectorAll('#grade .num.livre').length === 100);
   await a.screenshot({ path: `${SHOTS}/desktop-inicio.png`, fullPage: false });
 
   // 2) Visitante seleciona números verdes e reserva
@@ -75,7 +77,7 @@ try {
   assert.match(await a.textContent('#ok-titulo'), /Reserva feita/);
   await a.click('#btn-fechar-ok');
   await a.waitForSelector('#grade .num.ocupado[data-n="5"]');
-  ok('reserva concluída e números 05 e 07 ficaram vermelhos');
+  ok('reserva concluída e os números 5 e 7 ficaram marcados com X');
 
   // 3) Outro visitante vê os números indisponíveis em tempo real
   const ctxB = await novoContexto(devices['iPhone 13']);
@@ -83,13 +85,13 @@ try {
   await b.goto(`${BASE}/?emulador`);
   await b.waitForSelector('#grade .num.ocupado[data-n="7"]');
   assert.equal(await b.locator('#grade .num[data-n="5"]').isDisabled(), true);
-  ok('outro visitante vê 05 e 07 como indisponíveis (não clicáveis)');
+  ok('outro visitante vê 5 e 7 como vendidos (não clicáveis)');
 
   // 4) Rifas independentes: o número 5 da rifa 2 continua livre
-  await b.click('.aba[data-rifa="rifa-2"]');
+  await b.click('#cartelas [data-rifa="rifa-2"]');
   await b.waitForSelector('#grade .num.livre[data-n="5"]');
-  ok('o número 05 da Rifa 2 continua livre (rifas independentes)');
-  await b.click('.aba[data-rifa="rifa-1"]');
+  ok('o número 5 da cartela 2 continua livre (cartelas independentes)');
+  await b.click('#cartelas [data-rifa="rifa-1"]');
   await b.waitForSelector('#grade .num.ocupado[data-n="5"]');
 
   // 5) Duas pessoas tentam o mesmo número ao mesmo tempo: só uma consegue
@@ -144,7 +146,7 @@ try {
   await adm.click('#num-grade .num[data-n="5"]');
   await adm.click('[data-acao="vender"]');
   await adm.waitForSelector('#num-grade .num.ocupado[data-n="5"]');
-  ok('ADM confirmou pagamento do número 05 (vendido)');
+  ok('ADM confirmou pagamento do número 5 (vendido)');
 
   // ADM vende um número livre direto
   await adm.click('#num-grade .num[data-n="50"]');
@@ -160,7 +162,7 @@ try {
   await adm.click('#num-grade .num[data-n="7"]');
   await adm.click('[data-acao="liberar"]');
   await a.waitForSelector('#grade .num.livre[data-n="7"]');
-  ok('ADM liberou o número 07 e ele voltou a ficar verde no site');
+  ok('ADM liberou o número 7 e ele voltou a ficar disponível no site');
   await adm.screenshot({ path: `${SHOTS}/adm-numeros.png` });
 
   // Reservas: lista com dados do comprador
@@ -175,9 +177,9 @@ try {
   await adm.fill('#form-rifa [name=totalNumeros]', '200');
   await adm.fill('#form-rifa [name=preco]', '5');
   await adm.click('#dr-salvar');
-  await a.click('.aba[data-rifa="rifa-3"]');
+  await a.click('#cartelas [data-rifa="rifa-3"]');
   await a.waitForFunction(() => document.querySelectorAll('#grade .num').length === 200);
-  assert.match(await a.textContent('#rifa-premio'), /Air Fryer/);
+  assert.match(await a.textContent('#premios'), /Air Fryer/);
   ok('ADM alterou a Rifa 3 para 200 números e prêmio "Air Fryer"; o site atualizou');
 
   // Não deixa reduzir abaixo de um número já vendido

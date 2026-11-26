@@ -83,3 +83,30 @@
 .gal-item button.perigo { color: var(--vermelho); }
 .btn-laranja { background: var(--laranja); }
 .btn-laranja:hover { background: #b45309; }
+
+/* ---------- Legenda, filtros e grade de números do painel ---------- */
+.legenda { display: flex; flex-wrap: wrap; gap: 14px; font-size: .9rem; color: var(--texto-suave); margin-bottom: 8px; }
+.legenda span { display: inline-flex; align-items: center; gap: 6px; }
+.bolinha { width: 16px; height: 16px; border-radius: 5px; display: inline-block; }
+.bolinha.livre { background: var(--verde); }
+.bolinha.ocupado { background: var(--vermelho); }
+.bolinha.reservado { background: var(--laranja); }
+.segmentado { display: inline-flex; background: var(--fundo); border-radius: 999px; padding: 4px; border: 1px solid var(--borda); }
+.segmentado button {
+  border: 0; background: transparent; font: inherit; font-size: .9rem; padding: .45rem .9rem;
+  border-radius: 999px; cursor: pointer; color: var(--texto-suave); min-height: 38px;
+}
+.segmentado button.ativo { background: var(--primaria); color: #fff; }
+.grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(58px, 1fr)); gap: 8px; }
+@media (min-width: 720px) { .grade { grid-template-columns: repeat(auto-fill, minmax(66px, 1fr)); gap: 10px; } }
+.num {
+  min-height: 52px; border-radius: 12px; font: inherit; font-size: 1.1rem; font-weight: 800;
+  font-variant-numeric: tabular-nums; cursor: pointer; border: 2px solid transparent;
+  transition: transform .1s, background .15s;
+}
+.num.livre { background: var(--verde-fundo); color: #11743a; border-color: var(--verde-borda); }
+.num.livre:hover { background: #d3f1de; transform: translateY(-1px); }
+.num.ocupado { background: var(--vermelho); color: #fff; }
+.num.reservado { background: var(--laranja); color: #fff; }
+.num:active { transform: scale(.94); }
+.rifa-adm .premio { white-space: pre-line; color: var(--texto); }
