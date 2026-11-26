@@ -11,17 +11,31 @@
   <meta property="og:image" content="https://rifa-gugaftv.web.app/img/foto-3.jpg">
   <link rel="preload" as="image" href="/img/foto-3.jpg">
   <link rel="preload" as="font" type="font/woff2" href="/fonts/montserrat-800.woff2" crossorigin>
-  <link rel="preload" as="font" type="font/woff2" href="/fonts/great-vibes.woff2" crossorigin>
+  <link rel="preload" as="font" type="font/woff2" href="/fonts/alex-brush.woff2" crossorigin>
   <link rel="preconnect" href="https://firestore.googleapis.com">
-  <link rel="stylesheet" href="/css/style.css?v=14">
-  <link rel="stylesheet" href="/css/site.css?v=14">
-  <link rel="stylesheet" href="/css/intro.css?v=14">
-  <script src="/js/intro.js?v=14"></script>
+  <link rel="stylesheet" href="/css/style.css?v=15">
+  <link rel="stylesheet" href="/css/site.css?v=15">
+  <link rel="stylesheet" href="/css/intro.css?v=15">
+  <script src="/js/intro.js?v=15"></script>
 </head>
 <body class="site">
-  <!-- Abertura animada (some sozinha; toque para pular) -->
+  <!-- Abertura animada: a casa se desenha, a porta abre e aparecem os nomes (toque para pular) -->
   <div id="intro" role="presentation">
     <div class="intro-coracoes" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="intro-cena" aria-hidden="true">
+      <svg class="casa-grande" viewBox="0 0 200 190">
+        <rect class="luz" x="82" y="116" width="36" height="58" rx="3"/>
+        <g class="desenho">
+          <path class="t1" d="M14 96 100 20l86 76"/>
+          <path class="t2" d="M140 58V30h18v44"/>
+          <path class="t3" d="M34 82v92h132V82"/>
+          <path class="t4" d="M50 104h24v24H50zM126 104h24v24h-24z"/>
+          <path class="t5" d="M82 174v-58h36v58"/>
+        </g>
+        <g class="porta"><rect x="83.5" y="117.5" width="33" height="55" rx="2"/><circle cx="110" cy="146" r="2.4"/></g>
+        <path class="coracao-janela" d="M100 100c-4.6-3.4-9-6.6-9-10.8 0-2.7 2.1-4.7 4.6-4.7 1.9 0 3.6 1.1 4.4 2.7.8-1.6 2.5-2.7 4.4-2.7 2.5 0 4.6 2 4.6 4.7 0 4.2-4.4 7.4-9 10.8z"/>
+      </svg>
+    </div>
     <div class="intro-bloco">
       <p class="intro-cha" data-letras>Chá Rifa</p>
       <p class="intro-nomes"><span data-letras>Marcela &amp; Guga</span>
@@ -148,6 +162,6 @@
     </div>
   </dialog>
 
-  <script type="module" src="/js/app.js?v=14"></script>
+  <script type="module" src="/js/app.js?v=15"></script>
 </body>
 </html>

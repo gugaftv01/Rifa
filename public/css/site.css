@@ -7,6 +7,12 @@
   src: url(/fonts/montserrat-800.woff2) format('woff2');
 }
 @font-face {
+  font-family: 'Alex Brush';
+  font-weight: 400;
+  font-display: swap;
+  src: url(/fonts/alex-brush.woff2) format('woff2');
+}
+@font-face {
   font-family: 'Great Vibes';
   font-weight: 400;
   font-display: swap;
@@ -74,7 +80,7 @@ body.site.com-carrinho { padding-bottom: 116px; }
 }
 .moldura h1::after { background: linear-gradient(90deg, #c9a15e, transparent); }
 .nomes {
-  margin: 0; font-family: 'Great Vibes', 'Snell Roundhand', cursive; font-weight: 400;
+  margin: 0; font-family: 'Alex Brush', 'Great Vibes', 'Snell Roundhand', cursive; font-weight: 400;
   font-size: clamp(28px, 9vw, 48px); line-height: 1.2; color: #3d0a16; white-space: nowrap;
 }
 

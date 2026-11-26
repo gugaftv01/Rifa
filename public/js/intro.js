@@ -14,7 +14,7 @@
     if (pular) { intro.remove(); return; }
 
     // Separa cada texto em letras que começam espalhadas pela tela.
-    var atraso = { 'intro-cha': 0.25, 'intro-nomes': 1.15 };
+    var atraso = { 'intro-cha': 3.0, 'intro-nomes': 3.35 };
     document.querySelectorAll('#intro [data-letras]').forEach(function (el) {
       var base = el.classList.contains('intro-cha') ? atraso['intro-cha'] : atraso['intro-nomes'];
       var passo = el.classList.contains('intro-cha') ? 0.08 : 0.055;
