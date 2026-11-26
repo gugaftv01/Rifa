@@ -23,6 +23,9 @@ try {
     await p.waitForSelector('#cartelas button', { timeout: 30000 });
     assert.equal(await p.locator('#cartelas button').count(), 8);
     await p.waitForFunction(() => document.querySelectorAll('#grade .num').length === 100, null, { timeout: 30000 });
+    await p.click('#cartelas [data-rifa="rifa-8"]');
+    await p.waitForFunction(() => document.querySelector('#grade .num')?.dataset.n === '701' && [...document.querySelectorAll('#grade .num')].pop().dataset.n === '800', null, { timeout: 30000 });
+    ok(`${nome}: cartela 8 vai do 701 ao 800 no banco real`);
     ok(`${nome}: 8 cartelas e 100 números na cartela 1 carregados do banco real`);
 
     // Dados privados dos compradores não podem ser lidos por visitantes.
