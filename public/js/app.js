@@ -75,7 +75,7 @@ onSnapshot(collection(db, 'rifas'), (snap) => {
 
   if (!rifaAtual()) {
     const daUrl = location.hash.replace('#', '');
-    const inicial = estado.rifas.find((r) => r.id === daUrl) || estado.rifas[0];
+    const inicial = estado.rifas.find((r) => r.id === daUrl) || estado.rifas.find((r) => !r.emBreve) || estado.rifas[0];
     if (inicial) selecionarRifa(inicial.id, false, true);
   }
   desenharCartelas();
@@ -89,8 +89,9 @@ function desenharCartelas() {
   $('cartelas-nav').hidden = estado.rifas.length < 2;
   $('cartelas').innerHTML = estado.rifas.map((r, i) => {
     const ativa = r.id === estado.rifaId;
-    return `<button type="button" data-rifa="${escapar(r.id)}" class="${ativa ? 'ativa' : ''}" aria-pressed="${ativa}"
-      aria-label="Cartela ${i + 1}: ${escapar(r.nome)}" title="${escapar(r.nome)}">${i + 1}</button>`;
+    const classes = [ativa ? 'ativa' : '', r.emBreve ? 'breve' : ''].join(' ').trim();
+    return `<button type="button" data-rifa="${escapar(r.id)}" class="${classes}" aria-pressed="${ativa}"
+      aria-label="Cartela ${i + 1}${r.emBreve ? ' (em breve)' : ''}" title="${r.emBreve ? 'Em breve' : escapar(r.nome)}">${i + 1}</button>`;
   }).join('');
 }
 
@@ -138,6 +139,21 @@ function desenharRifa() {
   if (r.dataSorteio) $('data-sorteio').textContent = `Sorteio: ${new Date(`${r.dataSorteio}T12:00:00`).toLocaleDateString('pt-BR')}`;
   $('premios').textContent = r.premio || '';
   $('premios-box').hidden = !r.premio;
+  document.body.classList.toggle('cartela-breve', !!r.emBreve);
+  if (r.emBreve) {
+    // Cartela bloqueada: mostra "Em breve" no lugar dos números.
+    estado.selecionados.clear();
+    $('dica-coracao').hidden = true;
+    const aberta = estado.rifas.find((x) => !x.emBreve);
+    const posAberta = aberta ? estado.rifas.indexOf(aberta) + 1 : 0;
+    $('grade').innerHTML = `<div class="em-breve" role="status">
+      <strong>Em breve 😆🫶</strong>
+      <span>A Cartela ${pos} (números ${ini} a ${fim}) ainda não está liberada.</span>
+      ${aberta ? `<button type="button" class="btn-ir" data-ir="${escapar(aberta.id)}">Escolher números na Cartela ${posAberta}</button>` : ''}
+    </div>`;
+    desenharCarrinho();
+    return;
+  }
   desenharGrade(r);
   desenharCarrinho();
 }
@@ -194,6 +210,8 @@ function desenharGrade(r) {
 }
 
 $('grade').addEventListener('click', (e) => {
+  const ir = e.target.closest('[data-ir]');
+  if (ir) { selecionarRifa(ir.dataset.ir, true); $('dica').scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
   const b = e.target.closest('button[data-n]');
   if (!b || b.disabled) return;
   const n = Number(b.dataset.n);

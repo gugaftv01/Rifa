@@ -244,6 +244,18 @@ try {
   await adm.click('#dr-cancelar');
   ok('ADM não consegue fazer uma cartela invadir os números da outra');
 
+  // Cartela "Em breve": aparece no site, mas não deixa escolher números
+  await adm.click('[data-editar="rifa-7"]');
+  await adm.check('#form-rifa [name=emBreve]');
+  await adm.click('#dr-salvar');
+  await a.click('#cartelas [data-rifa="rifa-7"]');
+  await a.waitForSelector('.em-breve');
+  assert.match(await a.textContent('.em-breve'), /Em breve/);
+  assert.equal(await a.locator('#grade .num').count(), 0);
+  await a.click('.em-breve [data-ir]');
+  await a.waitForFunction(() => document.querySelectorAll('#grade .num').length > 0);
+  ok('cartela "Em breve" mostra a mensagem, não deixa comprar e leva para uma cartela aberta');
+
   // Não deixa reduzir abaixo de um número já vendido
   await adm.click('[data-editar="rifa-1"]');
   await adm.fill('#form-rifa [name=totalNumeros]', '20');

@@ -273,3 +273,19 @@ body.site.com-carrinho { padding-bottom: 116px; }
   body.tela-grande .infos .pix { grid-column: 1 / -1; }
   body.tela-grande .carrinho { width: min(1320px, calc(100vw - 48px)); }
 }
+
+/* ---------- Cartela "Em breve" ---------- */
+.cartelas button.breve { opacity: .55; border-style: dashed; }
+.cartelas button.breve.ativa { opacity: 1; }
+body.cartela-breve .dica, body.cartela-breve .legenda-site { display: none; }
+.em-breve {
+  grid-column: 1 / -1; display: grid; justify-items: center; gap: 10px; margin: 6px 0; padding: 34px 20px;
+  border-radius: 24px; text-align: center; color: #5c0f22;
+  background: linear-gradient(160deg, #fffaf2 0%, #fff3ea 55%, #fde9e4 100%); box-shadow: 0 14px 34px rgba(40, 6, 14, .35);
+}
+.em-breve strong { font: 400 clamp(44px, 13vw, 64px) / 1.1 'Alex Brush', 'Great Vibes', cursive; color: #8a1630; }
+.em-breve span { font-weight: 700; color: #3d0a16; }
+.btn-ir {
+  margin-top: 4px; padding: 12px 20px; border: 0; border-radius: 999px; background: #e8173c; color: #fff;
+  font: 800 .9rem / 1.2 var(--titulo); cursor: pointer; box-shadow: 0 8px 20px rgba(232, 23, 60, .35);
+}

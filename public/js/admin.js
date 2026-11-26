@@ -543,6 +543,7 @@ function desenharRifas() {
     return `<article class="rifa-adm">
       <h3>${escapar(r.nome)}</h3>
       ${r.ativa === false ? '<p class="inativa">Oculta no site</p>' : ''}
+      ${r.emBreve ? '<p class="inativa">Em breve (bloqueada para compras)</p>' : ''}
       <p class="premio">${escapar(r.premio || 'Prêmios não definidos')}</p>
       <p>${r.totalNumeros} números (${faixa(r).ini} a ${faixa(r).fim}) · ${brl(r.preco)} cada</p>
       <p>${s.vendidos} vendidos · ${s.reservados} reservados · ${s.livres} livres</p>
@@ -576,6 +577,7 @@ function abrirRifa(id) {
   ['nome', 'premio', 'preco', 'totalNumeros', 'dataSorteio', 'ordem'].forEach((k) => { f.elements[k].value = r[k] ?? ''; });
   f.elements.inicio.value = faixa(r).ini;
   f.elements.ativa.checked = r.ativa !== false;
+  f.elements.emBreve.checked = !!r.emBreve;
   rifaImagem = r.imagem || '';
   mostrarImagemRifa();
   $('dr-titulo').textContent = id ? 'Editar rifa' : 'Nova rifa';
@@ -611,6 +613,7 @@ $('form-rifa').addEventListener('submit', async (e) => {
     dataSorteio: f.elements.dataSorteio.value,
     ordem: Number(f.elements.ordem.value) || 0,
     ativa: f.elements.ativa.checked,
+    emBreve: f.elements.emBreve.checked,
     imagem: rifaImagem,
     atualizadoEm: serverTimestamp(),
   };

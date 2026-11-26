@@ -32,6 +32,7 @@ beforeEach(async () => {
     await setDoc(doc(db, 'rifas/rifa-2'), { nome: 'Rifa 2', totalNumeros: 50, preco: 5, ativa: true, ordem: 2 });
     await setDoc(doc(db, 'rifas/rifa-off'), { nome: 'Inativa', totalNumeros: 10, preco: 5, ativa: false, ordem: 9 });
     await setDoc(doc(db, 'config/site'), { titulo: 'Rifa' });
+    await setDoc(doc(db, 'rifas/em-breve'), { nome: 'Breve', totalNumeros: 100, inicio: 801, preco: 25, ativa: true, emBreve: true, ordem: 4 });
     await setDoc(doc(db, 'rifas/cartela-2'), { nome: 'Cartela 2', totalNumeros: 100, inicio: 101, preco: 25, ativa: true, ordem: 3 });
   });
 });
@@ -169,4 +170,10 @@ test('cartela 2 só aceita os números da sua faixa (101 a 200)', async () => {
   await assertFails(reservar(visitante(), 'cartela-2', 100));
   await assertFails(reservar(visitante(), 'cartela-2', 5));
   await assertFails(reservar(visitante(), 'cartela-2', 201));
+});
+
+test('cartela "em breve" não aceita reservas de visitantes (só o ADM registra)', async () => {
+  await assertFails(reservar(visitante(), 'em-breve', 801));
+  await assertFails(reservar(intruso(), 'em-breve', 850));
+  await assertSucceeds(reservar(admin(), 'em-breve', 802));
 });

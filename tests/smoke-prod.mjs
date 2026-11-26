@@ -24,8 +24,11 @@ try {
     assert.equal(await p.locator('#cartelas button').count(), 8);
     await p.waitForFunction(() => document.querySelectorAll('#grade .num').length === 100, null, { timeout: 30000 });
     await p.click('#cartelas [data-rifa="rifa-8"]');
-    await p.waitForFunction(() => document.querySelector('#grade .num')?.dataset.n === '701' && [...document.querySelectorAll('#grade .num')].pop().dataset.n === '800', null, { timeout: 30000 });
-    ok(`${nome}: cartela 8 vai do 701 ao 800 no banco real`);
+    await p.waitForSelector('.em-breve', { timeout: 30000 });
+    assert.match(await p.textContent('.em-breve'), /701 a 800/);
+    await p.screenshot({ path: `screenshots/producao-${nome}-em-breve.png` });
+    ok(`${nome}: cartela 8 (701 a 800) aparece como "Em breve" no banco real`);
+    await p.click('.em-breve [data-ir]');
     ok(`${nome}: 8 cartelas e 100 números na cartela 1 carregados do banco real`);
 
     // Dados privados dos compradores não podem ser lidos por visitantes.
