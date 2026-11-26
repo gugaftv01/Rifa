@@ -153,7 +153,12 @@ function iniciarOuvintes() {
   const erro = (e) => { console.error(e); toast('Erro ao carregar dados: ' + (e.code || e.message), 'erro'); };
   estado.parar.push(onSnapshot(collection(db, 'rifas'), (s) => {
     estado.rifas = s.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0));
-    if (!estado.rifas.some((r) => r.id === estado.numRifa)) estado.numRifa = estado.rifas[0]?.id || null;
+    if (!estado.rifas.some((r) => r.id === estado.numRifa)) {
+      let salvo = null;
+      try { salvo = localStorage.getItem('adm-cartela'); } catch { /* ok */ }
+      estado.numRifa = (estado.rifas.find((r) => r.id === salvo) || estado.rifas[0])?.id || null;
+      estado.resFiltroInicial = true;
+    }
     redesenhar();
   }, erro));
   estado.parar.push(onSnapshot(collection(db, 'reservas'), (s) => {
@@ -215,23 +220,55 @@ function estatisticas(r) {
   };
 }
 
+// Resumo: um quadradinho por rifa; ao clicar, o painel mostra só aquela rifa.
 function desenharResumo() {
-  let tv = 0, tr = 0, ta = 0, tar = 0;
-  $('resumo-tabela').innerHTML = estado.rifas.map((r) => {
+  $('resumo-cartelas').innerHTML = estado.rifas.map((r, i) => {
     const s = estatisticas(r);
-    tv += s.vendidos; tr += s.reservados; ta += s.arrecadado; tar += s.aReceber;
-    return `<tr>
-      <td><strong>${escapar(r.nome)}</strong>${r.ativa === false ? ' <span class="etiqueta vendido">oculta</span>' : ''}</td>
-      <td>${s.vendidos}</td><td>${s.reservados}</td><td>${s.livres} / ${r.totalNumeros}</td>
-      <td>${brl(s.arrecadado)}</td><td>${brl(s.aReceber)}</td></tr>`;
-  }).join('') || '<tr><td colspan="6">Nenhuma rifa cadastrada.</td></tr>';
+    const { ini, fim } = faixa(r);
+    const pct = r.totalNumeros ? Math.round(((s.vendidos + s.reservados) / r.totalNumeros) * 100) : 0;
+    const sel = r.id === estado.numRifa;
+    return `<button type="button" class="cartela-quadro ${sel ? 'selecionada' : ''}" data-cartela="${escapar(r.id)}" aria-pressed="${sel}">
+      <span class="cq-topo"><strong>${escapar(r.nome)}</strong>${r.emBreve ? '<em>em breve</em>' : ''}</span>
+      <span class="cq-faixa">${ini} a ${fim}</span>
+      <span class="cq-barra"><i style-w="${pct}"></i></span>
+      <span class="cq-falta"><b>${s.livres}</b> faltam</span>
+      <span class="cq-linha">${s.vendidos} pagos · ${s.reservados} reservados</span>
+    </button>`;
+  }).join('') || '<p class="vazio">Nenhuma rifa cadastrada.</p>';
+  // largura das barras via CSSOM (a política de segurança não permite style no HTML)
+  document.querySelectorAll('#resumo-cartelas [style-w]').forEach((el) => { el.style.width = `${el.getAttribute('style-w')}%`; });
+
+  const r = rifaPorId(estado.numRifa);
+  $('resumo-detalhe').hidden = !r;
+  if (!r) return;
+  const s = estatisticas(r);
+  const { ini, fim } = faixa(r);
+  $('resumo-titulo').textContent = `${r.nome} · números ${ini} a ${fim}`;
   $('resumo-geral').innerHTML = `
-    <div><span>Rifas</span><strong>${estado.rifas.length}</strong></div>
-    <div><span>Números vendidos</span><strong>${tv}</strong></div>
-    <div><span>Reservados</span><strong>${tr}</strong></div>
-    <div><span>Arrecadado</span><strong>${brl(ta)}</strong></div>
-    <div><span>A receber</span><strong>${brl(tar)}</strong></div>`;
+    <div class="destaque-falta"><span>Faltam vender</span><strong>${s.livres}</strong><small>de ${r.totalNumeros} números</small></div>
+    <div><span>Pagos</span><strong>${s.vendidos}</strong></div>
+    <div><span>Reservados</span><strong>${s.reservados}</strong></div>
+    <div><span>Arrecadado</span><strong>${brl(s.arrecadado)}</strong></div>
+    <div><span>A receber</span><strong>${brl(s.aReceber)}</strong></div>`;
+  const lista = pedidos().filter((g) => g.rifaId === r.id)
+    .sort((a, b) => (a.situacao === 'pago') - (b.situacao === 'pago') || b.data - a.data);
+  $('resumo-pedidos').innerHTML = lista.map(cartaoPedido).join('')
+    || '<p class="vazio">Ninguém comprou nesta rifa ainda.</p>';
 }
+
+function escolherCartela(id) {
+  estado.numRifa = id;
+  try { localStorage.setItem('adm-cartela', id); } catch { /* ok */ }
+  if (typeof lote !== 'undefined') { lote.nums.clear(); desenharLote(); }
+  if ($('res-rifa').querySelector(`option[value="${CSS.escape(id)}"]`)) $('res-rifa').value = id;
+  desenharSelects();
+  redesenhar();
+}
+
+$('resumo-cartelas').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-cartela]');
+  if (b) escolherCartela(b.dataset.cartela);
+});
 
 function desenharSelects() {
   const opcoes = estado.rifas.map((r) => `<option value="${escapar(r.id)}">${escapar(r.nome)}</option>`).join('');
@@ -240,10 +277,11 @@ function desenharSelects() {
   const atual = $('res-rifa').value;
   $('res-rifa').innerHTML = '<option value="">Todas as cartelas</option>' + opcoes;
   $('res-rifa').value = rifaPorId(atual) ? atual : '';
+  if (estado.resFiltroInicial && estado.numRifa) { $('res-rifa').value = estado.numRifa; estado.resFiltroInicial = false; }
 }
 
 /* ================= Números ================= */
-$('num-rifa').addEventListener('change', (e) => { estado.numRifa = e.target.value; lote.nums.clear(); desenharLote(); desenharNumeros(); });
+$('num-rifa').addEventListener('change', (e) => escolherCartela(e.target.value));
 document.querySelector('[data-painel="numeros"] .segmentado').addEventListener('click', (e) => {
   const b = e.target.closest('[data-nfiltro]');
   if (!b) return;
@@ -459,7 +497,10 @@ function desenharReservas() {
     <div><span>Compradores pagos</span><strong>${todos.length - aguardando.length}</strong></div>`;
   const lista = pedidosFiltrados();
   $('res-vazio').hidden = lista.length > 0;
-  $('res-lista').innerHTML = lista.map((g) => {
+  $('res-lista').innerHTML = lista.map(cartaoPedido).join('');
+}
+
+function cartaoPedido(g) {
     const r = rifaPorId(g.rifaId);
     const pos = estado.rifas.indexOf(r) + 1;
     const preco = Number(r?.preco) || 0;
@@ -486,10 +527,9 @@ function desenharReservas() {
         <button type="button" class="btn btn-sec btn-peq" data-liberar="${escapar(g.chave)}">Liberar tudo</button>
       </div>
     </article>`;
-  }).join('');
 }
 
-$('res-lista').addEventListener('click', async (e) => {
+async function cliquePedido(e) {
   const abrir = e.target.closest('[data-abrir]');
   if (abrir) { abrirNumero(abrir.dataset.abrir, Number(abrir.dataset.n)); return; }
   const pagar = e.target.closest('[data-pagar]');
@@ -517,7 +557,9 @@ $('res-lista').addEventListener('click', async (e) => {
     await batch.commit();
     toast(pagar ? `Pagamento de ${g.nome} confirmado! ${itens.length} ${itens.length === 1 ? 'número pago' : 'números pagos'}.` : 'Números liberados.');
   } catch (err) { toast('Erro: ' + err.message, 'erro'); b.disabled = false; }
-});
+}
+$('res-lista').addEventListener('click', cliquePedido);
+$('resumo-pedidos').addEventListener('click', cliquePedido);
 
 $('btn-csv').addEventListener('click', () => {
   const linhas = [['Cartela', 'Número', 'Nome', 'WhatsApp', 'Situação', 'Valor', 'Reservado em', 'Pago em']];

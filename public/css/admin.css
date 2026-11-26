@@ -144,3 +144,23 @@ section[data-painel="seguranca"] h3 { margin: 1.4rem 0 .6rem; }
 .pedido-acoes { display: flex; flex-wrap: wrap; gap: 8px; }
 .etiqueta.pago { background: var(--verde-fundo); color: #11743a; }
 .etiqueta.parcial { background: #e0eaff; color: #1e4fc2; }
+
+/* ---------- Quadradinhos das rifas (Resumo) ---------- */
+.cartelas-quadros { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-bottom: 22px; }
+.cartela-quadro {
+  display: grid; gap: 4px; padding: 12px 14px; border: 2px solid transparent; border-radius: 16px; background: #fff;
+  box-shadow: var(--sombra); text-align: left; font: inherit; color: var(--texto); cursor: pointer;
+}
+.cartela-quadro:hover { border-color: #c9cfe6; }
+.cartela-quadro.selecionada { border-color: var(--primaria); background: #eef1fb; }
+.cq-topo { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; }
+.cq-topo em { font-style: normal; font-size: .7rem; font-weight: 700; color: var(--laranja); text-transform: uppercase; }
+.cq-faixa, .cq-linha { font-size: .8rem; color: var(--texto-suave); }
+.cq-barra { height: 6px; border-radius: 99px; background: var(--verde-fundo); overflow: hidden; }
+.cq-barra i { display: block; height: 100%; width: 0; background: var(--verde); }
+.cq-falta b { font-size: 1.35rem; color: var(--primaria); }
+.resumo-titulo { margin-top: 6px; }
+.cards-resumo .destaque-falta { background: var(--primaria); }
+.cards-resumo .destaque-falta span, .cards-resumo .destaque-falta small { color: #cfd6f3; }
+.cards-resumo .destaque-falta strong { color: #fff; font-size: 2rem; }
+.cards-resumo .destaque-falta small { display: block; }

@@ -77,10 +77,12 @@ try {
   await intro.goto(`${BASE}/?emulador&intro`);
   await intro.waitForSelector('#intro .letra');
   assert.equal(await intro.locator('#intro .intro-cha .letra').count(), 'Chá Rifa'.length);
+  const inicioIntro = Date.now();
   await intro.waitForSelector('#intro', { state: 'detached', timeout: 10000 });
+  assert.ok(Date.now() - inicioIntro < 2500, `abertura demorou ${Date.now() - inicioIntro} ms`);
   await intro.click('#grade .num[data-n="1"]');
   assert.equal(await intro.locator('#grade .num.meu').count(), 1);
-  ok('abertura animada aparece, some sozinha e libera o site');
+  ok('abertura animada aparece e some sozinha em menos de 2,5 s, liberando o site');
 
   // 2) Visitante seleciona números verdes e reserva
   await a.click('#grade .num[data-n="5"]');
@@ -161,7 +163,9 @@ try {
   await adm.fill('#login-senha', ADM.senha);
   await adm.click('#btn-entrar');
   await adm.waitForSelector('#tela-painel:not([hidden])');
-  await adm.waitForFunction(() => document.querySelectorAll('#resumo-tabela tr').length === 8);
+  await adm.waitForFunction(() => document.querySelectorAll('#resumo-cartelas .cartela-quadro').length === 8);
+  await adm.waitForFunction(() => document.querySelector('#resumo-titulo').textContent.startsWith('Rifa 1'));
+  await adm.waitForFunction(() => /Faltam vender/.test(document.querySelector('#resumo-geral').textContent));
   ok('login do ADM funciona e mostra as 8 rifas');
   await adm.click('[data-secao="seguranca"]');
   await adm.waitForFunction(() => document.querySelector('#seg-tentativas').textContent.includes('adm@teste.com'));
@@ -222,6 +226,14 @@ try {
     return c && c.classList.contains('pago') && c.querySelectorAll('.chip.pago').length === 3;
   });
   ok('um toque em "Confirmar pagamento" marcou os 3 números da pessoa como pagos');
+  await adm.click('[data-secao="resumo"]');
+  await adm.waitForFunction(() => document.querySelector('#resumo-pedidos').textContent.includes('Família Souza'));
+  await adm.screenshot({ path: `${SHOTS}/adm-resumo-rifas.png` });
+  await adm.click('#resumo-cartelas [data-cartela="rifa-2"]');
+  await adm.waitForFunction(() => document.querySelector('#resumo-titulo').textContent.startsWith('Rifa 2')
+    && !document.querySelector('#resumo-pedidos').textContent.includes('Família Souza'));
+  await adm.click('#resumo-cartelas [data-cartela="rifa-1"]');
+  ok('quadradinho de cada rifa mostra quantos faltam e só os compradores daquela rifa');
 
   // ADM edita rifa (quantidade de números e prêmio)
   await adm.click('[data-secao="rifas"]');

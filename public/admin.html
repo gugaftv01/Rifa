@@ -6,8 +6,8 @@
   <meta name="robots" content="noindex, nofollow">
   <title>Painel ADM</title>
   <meta name="theme-color" content="#1e2a5a">
-  <link rel="stylesheet" href="/css/style.css?v=18">
-  <link rel="stylesheet" href="/css/admin.css?v=18">
+  <link rel="stylesheet" href="/css/style.css?v=19">
+  <link rel="stylesheet" href="/css/admin.css?v=19">
 </head>
 <body class="adm">
   <!-- Login -->
@@ -54,13 +54,14 @@
     <main class="container adm-main">
       <!-- Resumo -->
       <section data-painel="resumo">
-        <h2>Resumo das vendas</h2>
-        <div class="cards-resumo" id="resumo-geral"></div>
-        <div class="tabela-wrap">
-          <table class="tabela">
-            <thead><tr><th>Rifa</th><th>Vendidos</th><th>Reservados</th><th>Disponíveis</th><th>Arrecadado</th><th>A receber</th></tr></thead>
-            <tbody id="resumo-tabela"></tbody>
-          </table>
+        <h2>Rifas</h2>
+        <p class="dica">Toque numa rifa para ver só as informações e os compradores dela.</p>
+        <div class="cartelas-quadros" id="resumo-cartelas"></div>
+        <div id="resumo-detalhe" hidden>
+          <h2 class="resumo-titulo" id="resumo-titulo"></h2>
+          <div class="cards-resumo" id="resumo-geral"></div>
+          <h3>Quem comprou</h3>
+          <div class="pedidos" id="resumo-pedidos"></div>
         </div>
       </section>
 
@@ -233,6 +234,6 @@
     </form>
   </dialog>
 
-  <script type="module" src="/js/admin.js?v=18"></script>
+  <script type="module" src="/js/admin.js?v=19"></script>
 </body>
 </html>
