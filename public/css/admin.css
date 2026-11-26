@@ -110,3 +110,8 @@
 .num.reservado { background: var(--laranja); color: #fff; }
 .num:active { transform: scale(.94); }
 .rifa-adm .premio { white-space: pre-line; color: var(--texto); }
+
+.link-btn { margin-top: .4rem; padding: .4rem; border: 0; background: none; color: var(--primaria); font: inherit; font-weight: 600; text-decoration: underline; cursor: pointer; }
+.login-card .info { margin: .4rem 0 0; color: var(--verde); font-weight: 600; min-height: 0; }
+.alerta { padding: .8rem 1rem; border-radius: 12px; background: var(--vermelho-fundo); color: #a51c1c; font-weight: 700; }
+section[data-painel="seguranca"] h3 { margin: 1.4rem 0 .6rem; }

@@ -2,13 +2,13 @@
 // Firestore: só funcionam para usuários logados que estão na coleção /admins.
 import { app, db } from './firebase.js';
 import {
-  getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut,
+  getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, sendPasswordResetEmail,
   EmailAuthProvider, reauthenticateWithCredential, updatePassword, connectAuthEmulator,
-} from 'https://www.gstatic.com/firebasejs/13.4.0/firebase-auth.js';
+} from '/vendor/firebase/13.4.0/firebase-auth.js';
 import {
   collection, doc, getDoc, getDocs, onSnapshot, setDoc, updateDoc, deleteDoc, addDoc,
-  writeBatch, serverTimestamp, query, where, deleteField,
-} from 'https://www.gstatic.com/firebasejs/13.4.0/firebase-firestore.js';
+  writeBatch, serverTimestamp, query, where, deleteField, orderBy, limit,
+} from '/vendor/firebase/13.4.0/firebase-firestore.js';
 import {
   CONFIG_PADRAO, brl, soDigitos, formatarTelefone, linkWhatsApp, escapar, toast, prepararImagem,
 } from './util.js';
@@ -23,19 +23,50 @@ const estado = {
   config: { ...CONFIG_PADRAO },
   numRifa: null,
   numFiltro: 'todos',
+  acessos: [],
+  tentativas: [],
   parar: [],
 };
 
 /* ================= Autenticação ================= */
+auth.languageCode = 'pt-BR';
+const LIMITE_INATIVO = 12 * 60 * 60 * 1000; // 12 horas sem usar o painel = sai sozinho
+let entrouAgora = false;
+
 function mostrar(tela) {
   $('tela-carregando').hidden = tela !== 'carregando';
   $('tela-login').hidden = tela !== 'login';
   $('tela-painel').hidden = tela !== 'painel';
 }
 
+// Descrição curta do aparelho (ex.: "Android · Chrome"), para o registro de segurança.
+function aparelho() {
+  const ua = navigator.userAgent;
+  const so = /iPhone/.test(ua) ? 'iPhone' : /iPad/.test(ua) ? 'iPad' : /Android/.test(ua) ? 'Android'
+    : /Windows/.test(ua) ? 'Windows' : /Mac OS X/.test(ua) ? 'Mac' : /Linux/.test(ua) ? 'Linux' : 'Outro';
+  const nav = /Edg\//.test(ua) ? 'Edge' : /SamsungBrowser/.test(ua) ? 'Samsung Internet' : /Firefox|FxiOS/.test(ua) ? 'Firefox'
+    : /Chrome|CriOS/.test(ua) ? 'Chrome' : /Safari/.test(ua) ? 'Safari' : 'Navegador';
+  return `${so} · ${nav}`.slice(0, 100);
+}
+
+const lerUltimoUso = () => { try { return Number(localStorage.getItem('adm-ultimo-uso')) || 0; } catch { return 0; } };
+function marcarUso() { try { localStorage.setItem('adm-ultimo-uso', String(Date.now())); } catch { /* ok */ } }
+let ultimaMarca = 0;
+['click', 'keydown', 'touchstart'].forEach((ev) => document.addEventListener(ev, () => {
+  if (auth.currentUser && Date.now() - ultimaMarca > 60_000) { ultimaMarca = Date.now(); marcarUso(); }
+}, { passive: true }));
+setInterval(() => {
+  if (auth.currentUser && Date.now() - lerUltimoUso() > LIMITE_INATIVO) sairPorInatividade();
+}, 60_000);
+async function sairPorInatividade() {
+  await signOut(auth);
+  $('login-erro').textContent = 'Por segurança, você saiu depois de 12 horas sem usar o painel. Entre de novo.';
+}
+
 onAuthStateChanged(auth, async (user) => {
   pararOuvintes();
   if (!user) { mostrar('login'); return; }
+  if (!entrouAgora && lerUltimoUso() && Date.now() - lerUltimoUso() > LIMITE_INATIVO) { await sairPorInatividade(); return; }
   mostrar('carregando');
   let ehAdmin = false;
   try { ehAdmin = (await getDoc(doc(db, 'admins', user.uid))).exists(); } catch { ehAdmin = false; }
@@ -45,6 +76,11 @@ onAuthStateChanged(auth, async (user) => {
     $('login-erro').textContent = 'Esta conta não tem permissão de administrador.';
     return;
   }
+  marcarUso();
+  if (entrouAgora) {
+    entrouAgora = false;
+    addDoc(collection(db, 'acessos'), { uid: user.uid, aparelho: aparelho(), quando: serverTimestamp() }).catch(() => {});
+  }
   $('conta-email').textContent = user.email;
   mostrar('painel');
   iniciarOuvintes();
@@ -53,25 +89,51 @@ onAuthStateChanged(auth, async (user) => {
 $('form-login').addEventListener('submit', async (e) => {
   e.preventDefault();
   $('login-erro').textContent = '';
+  $('login-info').textContent = '';
   const btn = $('btn-entrar');
+  const email = $('login-email').value.trim();
   btn.disabled = true;
   try {
-    await signInWithEmailAndPassword(auth, $('login-email').value.trim(), $('login-senha').value);
+    entrouAgora = true;
+    await signInWithEmailAndPassword(auth, email, $('login-senha').value);
     $('login-senha').value = '';
   } catch (err) {
+    entrouAgora = false;
+    // Registra a tentativa errada (só o ADM consegue ler esse registro).
+    addDoc(collection(db, 'tentativas'), { email: email.slice(0, 100), aparelho: aparelho(), quando: serverTimestamp() }).catch(() => {});
     $('login-erro').textContent = err.code === 'auth/too-many-requests'
       ? 'Muitas tentativas. Aguarde alguns minutos.'
       : 'E-mail ou senha incorretos.';
   } finally { btn.disabled = false; }
 });
 
+// Esqueci a senha: a mensagem é sempre a mesma, para não revelar se o e-mail tem conta.
+$('btn-esqueci').addEventListener('click', async () => {
+  $('login-erro').textContent = '';
+  const email = $('login-email').value.trim();
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { $('login-erro').textContent = 'Digite seu e-mail no campo acima e toque de novo.'; return; }
+  try { await sendPasswordResetEmail(auth, email); } catch (err) {
+    if (err.code === 'auth/too-many-requests') { $('login-erro').textContent = 'Muitas tentativas. Aguarde alguns minutos.'; return; }
+  }
+  $('login-info').textContent = 'Se esse e-mail tiver acesso, você vai receber um link para criar uma nova senha. Veja também o spam.';
+});
+
 $('btn-sair').addEventListener('click', () => signOut(auth));
+
+// Senha forte: pelo menos 8 caracteres, com letra minúscula e número.
+function senhaFraca(s) {
+  if (s.length < 8) return 'A nova senha precisa ter pelo menos 8 caracteres.';
+  if (!/[a-z]/.test(s)) return 'A nova senha precisa ter pelo menos uma letra minúscula.';
+  if (!/[0-9]/.test(s)) return 'A nova senha precisa ter pelo menos um número.';
+  return '';
+}
 
 $('form-senha').addEventListener('submit', async (e) => {
   e.preventDefault();
   $('senha-erro').textContent = '';
   const nova = $('senha-nova').value;
-  if (nova.length < 8) { $('senha-erro').textContent = 'A nova senha precisa ter pelo menos 8 caracteres.'; return; }
+  const problema = senhaFraca(nova);
+  if (problema) { $('senha-erro').textContent = problema; return; }
   try {
     const cred = EmailAuthProvider.credential(auth.currentUser.email, $('senha-atual').value);
     await reauthenticateWithCredential(auth.currentUser, cred);
@@ -80,7 +142,9 @@ $('form-senha').addEventListener('submit', async (e) => {
     toast('Senha alterada com sucesso!');
   } catch (err) {
     $('senha-erro').textContent = err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password'
-      ? 'Senha atual incorreta.' : `Não foi possível alterar: ${err.code || err.message}`;
+      ? 'Senha atual incorreta.'
+      : err.code === 'auth/password-does-not-meet-requirements' ? 'A senha não atende às regras de segurança.'
+        : `Não foi possível alterar: ${err.code || err.message}`;
   }
 });
 
@@ -95,6 +159,14 @@ function iniciarOuvintes() {
   estado.parar.push(onSnapshot(collection(db, 'reservas'), (s) => {
     estado.reservas = s.docs.map((d) => ({ id: d.id, ...d.data() }));
     redesenhar();
+  }, erro));
+  estado.parar.push(onSnapshot(query(collection(db, 'acessos'), orderBy('quando', 'desc'), limit(20)), (s) => {
+    estado.acessos = s.docs.map((d) => ({ id: d.id, ...d.data() }));
+    desenharSeguranca();
+  }, erro));
+  estado.parar.push(onSnapshot(query(collection(db, 'tentativas'), orderBy('quando', 'desc'), limit(50)), (s) => {
+    estado.tentativas = s.docs.map((d) => ({ id: d.id, ...d.data() }));
+    desenharSeguranca();
   }, erro));
   estado.parar.push(onSnapshot(doc(db, 'config/site'), (s) => {
     estado.config = { ...CONFIG_PADRAO, ...(s.exists() ? s.data() : {}) };
@@ -493,4 +565,49 @@ $('form-pagina').addEventListener('submit', async (e) => {
     heroNova = null;
     toast('Página inicial atualizada!');
   } catch (err) { toast('Erro ao salvar: ' + err.message, 'erro'); }
+});
+
+/* ================= Segurança ================= */
+const dataHora = (t) => (t?.toDate ? t.toDate().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : '…');
+
+function desenharSeguranca() {
+  $('seg-acessos').innerHTML = estado.acessos.map((a) => `<tr><td>${dataHora(a.quando)}</td><td>${escapar(a.aparelho)}</td></tr>`).join('')
+    || '<tr><td colspan="2">Nenhuma entrada registrada ainda.</td></tr>';
+  $('seg-tentativas').innerHTML = estado.tentativas.map((t) => `<tr><td>${dataHora(t.quando)}</td><td>${escapar(t.email)}</td><td>${escapar(t.aparelho)}</td></tr>`).join('')
+    || '<tr><td colspan="3">Nenhuma senha errada registrada. 👍</td></tr>';
+  $('seg-alerta').hidden = !estado.tentativas.length;
+  $('seg-alerta').textContent = `${estado.tentativas.length}${estado.tentativas.length === 50 ? '+' : ''} tentativa(s) com senha errada. Se não foi você, troque a senha em Conta.`;
+}
+
+$('btn-limpar-tentativas').addEventListener('click', async () => {
+  if (!estado.tentativas.length || !confirm('Apagar o registro de senhas erradas?')) return;
+  const b = writeBatch(db);
+  estado.tentativas.forEach((t) => b.delete(doc(db, 'tentativas', t.id)));
+  try { await b.commit(); toast('Registro limpo.'); } catch (err) { toast('Erro: ' + err.message, 'erro'); }
+});
+
+// Backup: baixa tudo (página, rifas, números e reservas) num arquivo JSON.
+$('btn-backup').addEventListener('click', async (e) => {
+  const btn = e.currentTarget;
+  btn.disabled = true;
+  try {
+    const paraObj = (snap) => snap.docs.map((d) => ({ id: d.id, ...JSON.parse(JSON.stringify(d.data())) }));
+    const config = await getDoc(doc(db, 'config/site'));
+    const rifas = await getDocs(collection(db, 'rifas'));
+    const numeros = {};
+    for (const r of rifas.docs) numeros[r.id] = paraObj(await getDocs(collection(db, 'rifas', r.id, 'numeros')));
+    const dados = {
+      geradoEm: new Date().toISOString(),
+      config: config.exists() ? config.data() : null,
+      rifas: paraObj(rifas),
+      numeros,
+      reservas: paraObj(await getDocs(collection(db, 'reservas'))),
+    };
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(dados, null, 2)], { type: 'application/json' }));
+    a.download = `backup-rifa-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    toast('Backup baixado!');
+  } catch (err) { toast('Erro no backup: ' + err.message, 'erro'); } finally { btn.disabled = false; }
 });

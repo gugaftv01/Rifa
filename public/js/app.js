@@ -2,7 +2,7 @@
 import { db } from './firebase.js';
 import {
   collection, doc, onSnapshot, writeBatch, serverTimestamp,
-} from 'https://www.gstatic.com/firebasejs/13.4.0/firebase-firestore.js';
+} from '/vendor/firebase/13.4.0/firebase-firestore.js';
 import {
   CONFIG_PADRAO, brl, soDigitos, formatarTelefone, linkWhatsApp, escapar, toast,
 } from './util.js';

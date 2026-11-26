@@ -6,8 +6,8 @@
   <meta name="robots" content="noindex, nofollow">
   <title>Painel ADM</title>
   <meta name="theme-color" content="#1e2a5a">
-  <link rel="stylesheet" href="/css/style.css?v=12">
-  <link rel="stylesheet" href="/css/admin.css?v=12">
+  <link rel="stylesheet" href="/css/style.css?v=13">
+  <link rel="stylesheet" href="/css/admin.css?v=13">
 </head>
 <body class="adm">
   <!-- Login -->
@@ -23,6 +23,8 @@
       </label>
       <p class="erro" id="login-erro" role="alert"></p>
       <button class="btn btn-grande" id="btn-entrar" type="submit">Entrar</button>
+      <button class="link-btn" id="btn-esqueci" type="button">Esqueci a senha / primeiro acesso</button>
+      <p class="info" id="login-info" role="status"></p>
     </form>
   </section>
 
@@ -44,6 +46,7 @@
         <button type="button" data-secao="reservas">Reservas</button>
         <button type="button" data-secao="rifas">Rifas</button>
         <button type="button" data-secao="pagina">Página inicial</button>
+        <button type="button" data-secao="seguranca">Segurança</button>
         <button type="button" data-secao="conta">Conta</button>
       </nav>
     </header>
@@ -140,12 +143,30 @@
       </section>
 
       <!-- Conta -->
+      <section data-painel="seguranca" hidden>
+        <h2>Segurança</h2>
+        <p class="alerta" id="seg-alerta" hidden></p>
+        <h3>Últimas entradas no painel</h3>
+        <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Quando</th><th>Aparelho</th></tr></thead><tbody id="seg-acessos"></tbody></table></div>
+        <div class="titulo-acao">
+          <h3>Senhas erradas digitadas</h3>
+          <button type="button" class="btn btn-sec btn-peq" id="btn-limpar-tentativas">Limpar registro</button>
+        </div>
+        <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Quando</th><th>E-mail digitado</th><th>Aparelho</th></tr></thead><tbody id="seg-tentativas"></tbody></table></div>
+        <div class="titulo-acao">
+          <h3>Backup</h3>
+          <button type="button" class="btn btn-peq" id="btn-backup">Baixar backup completo</button>
+        </div>
+        <p class="dica">Baixa um arquivo com a página, as rifas, os números e todas as reservas (com nome e WhatsApp). Guarde em lugar seguro.</p>
+        <p class="dica">O painel sai sozinho depois de 12 horas sem uso.</p>
+      </section>
+
       <section data-painel="conta" hidden>
         <h2>Conta</h2>
         <p>Conectado como <strong id="conta-email"></strong></p>
         <form id="form-senha" class="form-grade estreita">
           <label class="larga">Senha atual <input type="password" id="senha-atual" autocomplete="current-password" required></label>
-          <label class="larga">Nova senha (mínimo 8 caracteres) <input type="password" id="senha-nova" autocomplete="new-password" minlength="8" required></label>
+          <label class="larga">Nova senha (mínimo 8 caracteres, com letra minúscula e número) <input type="password" id="senha-nova" autocomplete="new-password" minlength="8" required></label>
           <p class="erro larga" id="senha-erro" role="alert"></p>
           <div class="larga"><button class="btn" type="submit">Alterar senha</button></div>
         </form>
@@ -197,6 +218,6 @@
     </form>
   </dialog>
 
-  <script type="module" src="/js/admin.js?v=12"></script>
+  <script type="module" src="/js/admin.js?v=13"></script>
 </body>
 </html>

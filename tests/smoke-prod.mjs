@@ -27,8 +27,8 @@ try {
 
     // Dados privados dos compradores não podem ser lidos por visitantes.
     const leitura = await p.evaluate(async () => {
-      const { getFirestore, collection, getDocs } = await import('https://www.gstatic.com/firebasejs/13.4.0/firebase-firestore.js');
-      const { getApp } = await import('https://www.gstatic.com/firebasejs/13.4.0/firebase-app.js');
+      const { getFirestore, collection, getDocs } = await import('/vendor/firebase/13.4.0/firebase-firestore.js');
+      const { getApp } = await import('/vendor/firebase/13.4.0/firebase-app.js');
       try { await getDocs(collection(getFirestore(getApp()), 'reservas')); return 'LIDO'; } catch (e) { return e.code; }
     });
     assert.equal(leitura, 'permission-denied');

@@ -2,7 +2,7 @@
 
 Chá Rifa em formato de cartaz: foto do casal ao fundo, cartela de corações (8 cartelas
 independentes de 100 números), reservas em tempo real e painel administrativo.
-Hospedado no Firebase (projeto `rifa-gugaftv`).
+Hospedado no Firebase (projeto `rifa-gugaftv`). Veja também o [SEGURANCA.md](SEGURANCA.md).
 
 - **Site:** https://rifa-gugaftv.web.app
 - **Painel ADM:** https://rifa-gugaftv.web.app/admin (não há link no site público)

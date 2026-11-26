@@ -139,3 +139,25 @@ test('ADM gerencia rifas, números, reservas e página inicial', async () => {
   // Depois de liberado, o número volta a ficar disponível para visitantes.
   await assertSucceeds(reservar(visitante(), 'rifa-1', 7));
 });
+
+test('registro de senhas erradas: qualquer um acrescenta, só o ADM lê e apaga', async () => {
+  const dados = { email: 'x@y.com', aparelho: 'Android · Chrome', quando: serverTimestamp() };
+  await assertSucceeds(setDoc(doc(visitante(), 'tentativas/t1'), dados));
+  await assertFails(setDoc(doc(visitante(), 'tentativas/t1'), dados)); // não sobrescreve
+  await assertFails(setDoc(doc(visitante(), 'tentativas/t2'), { ...dados, extra: 1 }));
+  await assertFails(setDoc(doc(visitante(), 'tentativas/t3'), { ...dados, email: 'x'.repeat(101) }));
+  await assertFails(getDocs(collection(visitante(), 'tentativas')));
+  await assertFails(deleteDoc(doc(intruso(), 'tentativas/t1')));
+  await assertSucceeds(getDocs(collection(admin(), 'tentativas')));
+  await assertSucceeds(deleteDoc(doc(admin(), 'tentativas/t1')));
+});
+
+test('registro de entradas: só o ADM grava (com o próprio uid) e lê', async () => {
+  const dados = (uid) => ({ uid, aparelho: 'iPhone · Safari', quando: serverTimestamp() });
+  await assertFails(setDoc(doc(visitante(), 'acessos/a1'), dados('ninguem')));
+  await assertFails(setDoc(doc(intruso(), 'acessos/a1'), dados('qualquer')));
+  await assertFails(setDoc(doc(admin(), 'acessos/a1'), dados('outro-uid')));
+  await assertSucceeds(setDoc(doc(admin(), 'acessos/a1'), dados('adm1')));
+  await assertFails(getDocs(collection(intruso(), 'acessos')));
+  await assertSucceeds(getDocs(collection(admin(), 'acessos')));
+});

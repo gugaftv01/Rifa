@@ -140,6 +140,9 @@ try {
   await v.click('#btn-entrar');
   await v.waitForFunction(() => /incorretos/.test(document.querySelector('#login-erro').textContent));
   ok('senha errada é recusada');
+  await v.click('#btn-esqueci');
+  await v.waitForFunction(() => /Se esse e-mail tiver acesso/.test(document.querySelector('#login-info').textContent));
+  ok('"esqueci a senha" responde sem revelar se o e-mail existe');
 
   // 7) ADM entra, vê as vendas e confirma pagamento
   const adm = await (await novoContexto({ viewport: { width: 1280, height: 900 } })).newPage();
@@ -150,6 +153,11 @@ try {
   await adm.waitForSelector('#tela-painel:not([hidden])');
   await adm.waitForFunction(() => document.querySelectorAll('#resumo-tabela tr').length === 8);
   ok('login do ADM funciona e mostra as 8 rifas');
+  await adm.click('[data-secao="seguranca"]');
+  await adm.waitForFunction(() => document.querySelector('#seg-tentativas').textContent.includes('adm@teste.com'));
+  await adm.waitForFunction(() => /\d{2}\/\d{2}\/\d{2,4}/.test(document.querySelector('#seg-acessos').textContent));
+  ok('aba Segurança mostra a senha errada digitada e a entrada do ADM');
+  await adm.click('[data-secao="resumo"]');
   await adm.screenshot({ path: `${SHOTS}/adm-resumo.png` });
 
   await adm.click('[data-secao="numeros"]');

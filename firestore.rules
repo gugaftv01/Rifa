@@ -43,6 +43,25 @@ service cloud.firestore {
         && int(numero) <= rifa.totalNumeros;
     }
 
+    // Registro de entradas do ADM: só o próprio ADM grava (com a hora do servidor) e lê.
+    match /acessos/{id} {
+      allow read, delete: if isAdmin();
+      allow create: if isAdmin()
+        && request.resource.data.keys().hasOnly(['uid', 'aparelho', 'quando'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.aparelho is string && request.resource.data.aparelho.size() <= 100
+        && request.resource.data.quando == request.time;
+    }
+
+    // Senhas erradas: a tela de login só acrescenta registros; só o ADM lê e apaga.
+    match /tentativas/{id} {
+      allow read, delete: if isAdmin();
+      allow create: if request.resource.data.keys().hasOnly(['email', 'aparelho', 'quando'])
+        && request.resource.data.email is string && request.resource.data.email.size() <= 100
+        && request.resource.data.aparelho is string && request.resource.data.aparelho.size() <= 100
+        && request.resource.data.quando == request.time;
+    }
+
     match /admins/{uid} {
       allow read: if request.auth != null && request.auth.uid == uid;
       allow write: if false;
