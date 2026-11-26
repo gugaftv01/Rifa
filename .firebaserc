@@ -1,5 +1,7 @@
 {
   "projects": {
     "default": "rifa-gugaftv"
-  }
+  },
+  "targets": {},
+  "etags": {}
 }

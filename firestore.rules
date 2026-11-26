@@ -1,10 +1,104 @@
 rules_version = '2';
+
+// Regras de segurança do site de rifas.
+//
+// Modelo de dados:
+//   config/site                      -> textos e imagem principal da página inicial (público)
+//   galeria/{id}                     -> fotos da galeria da página inicial (público)
+//   rifas/{rifaId}                   -> dados de cada rifa (público)
+//   rifas/{rifaId}/numeros/{numero}  -> status PÚBLICO de cada número ocupado (sem dados pessoais).
+//                                       Número sem documento = disponível.
+//   reservas/{rifaId_numero}         -> dados PRIVADOS do comprador (só o ADM lê)
+//   admins/{uid}                     -> quem é administrador (só pode ser criado pelo console/servidor)
+//
+// Garantias:
+//   * Visitante só consegue CRIAR um número que ainda não existe. Se o número já foi
+//     reservado/vendido, a escrita vira "update" e é negada -> impossível reservar duas vezes.
+//   * O número público e a reserva privada precisam ser gravados juntos (mesmo batch).
+//   * Toda operação administrativa exige um usuário logado presente em /admins.
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Leitura pública; escrita apenas para usuários autenticados.
-    match /{document=**} {
+
+    function isAdmin() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    function rifaPath(rifaId) {
+      return /databases/$(database)/documents/rifas/$(rifaId);
+    }
+
+    function numeroPath(rifaId, numero) {
+      return /databases/$(database)/documents/rifas/$(rifaId)/numeros/$(numero);
+    }
+
+    function reservaPath(reservaId) {
+      return /databases/$(database)/documents/reservas/$(reservaId);
+    }
+
+    // Número em texto canônico ("7", nunca "07") e dentro do limite da rifa ativa.
+    function numeroValido(rifaId, numero) {
+      let rifa = get(rifaPath(rifaId)).data;
+      return numero.matches('^[1-9][0-9]{0,4}$')
+        && rifa.ativa == true
+        && int(numero) <= rifa.totalNumeros;
+    }
+
+    match /admins/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    match /config/{docId} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if isAdmin();
+    }
+
+    match /galeria/{fotoId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /rifas/{rifaId} {
+      allow read: if true;
+      allow write: if isAdmin();
+
+      match /numeros/{numero} {
+        allow read: if true;
+
+        // Visitante: só cria (nunca sobrescreve) e somente junto com a reserva privada.
+        allow create: if isAdmin() || (
+          numeroValido(rifaId, numero)
+          && request.resource.data.keys().hasOnly(['status', 'reservaId', 'criadoEm'])
+          && request.resource.data.status == 'reservado'
+          && request.resource.data.criadoEm == request.time
+          && request.resource.data.reservaId == rifaId + '_' + numero
+          && existsAfter(reservaPath(rifaId + '_' + numero))
+        );
+
+        allow update, delete: if isAdmin();
+      }
+    }
+
+    match /reservas/{reservaId} {
+      allow read, update, delete: if isAdmin();
+
+      allow create: if isAdmin() || (
+        request.resource.data.keys().hasOnly(['rifaId', 'numero', 'nome', 'telefone', 'status', 'criadoEm'])
+        && request.resource.data.rifaId is string
+        && request.resource.data.numero is int
+        && reservaId == request.resource.data.rifaId + '_' + string(request.resource.data.numero)
+        && request.resource.data.nome is string
+        && request.resource.data.nome.size() >= 2
+        && request.resource.data.nome.size() <= 80
+        && request.resource.data.telefone is string
+        && request.resource.data.telefone.matches('^[0-9]{10,13}$')
+        && request.resource.data.status == 'reservado'
+        && request.resource.data.criadoEm == request.time
+        // O número precisa estar livre antes e ser ocupado nesta mesma gravação.
+        && !exists(numeroPath(request.resource.data.rifaId, string(request.resource.data.numero)))
+        && getAfter(numeroPath(request.resource.data.rifaId, string(request.resource.data.numero))).data.reservaId == reservaId
+      );
     }
   }
 }

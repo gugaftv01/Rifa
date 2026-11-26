@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Painel ADM</title>
+  <meta name="theme-color" content="#1e2a5a">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="adm">
+  <!-- Login -->
+  <section id="tela-login" class="login" hidden>
+    <form id="form-login" class="login-card" novalidate>
+      <h1>Painel ADM</h1>
+      <p>Acesso restrito aos administradores.</p>
+      <label>E-mail
+        <input id="login-email" type="email" autocomplete="username" required>
+      </label>
+      <label>Senha
+        <input id="login-senha" type="password" autocomplete="current-password" required>
+      </label>
+      <p class="erro" id="login-erro" role="alert"></p>
+      <button class="btn btn-grande" id="btn-entrar" type="submit">Entrar</button>
+    </form>
+  </section>
+
+  <p class="carregando" id="tela-carregando">Carregando…</p>
+
+  <!-- Painel -->
+  <div id="tela-painel" hidden>
+    <header class="adm-topo">
+      <div class="container adm-topo-inner">
+        <strong>Painel ADM</strong>
+        <div class="adm-topo-acoes">
+          <a class="btn btn-sec btn-peq" href="/" target="_blank" rel="noopener">Ver site</a>
+          <button class="btn btn-sec btn-peq" id="btn-sair" type="button">Sair</button>
+        </div>
+      </div>
+      <nav class="container adm-abas" id="adm-abas" aria-label="Seções do painel">
+        <button type="button" data-secao="resumo" class="ativa">Resumo</button>
+        <button type="button" data-secao="numeros">Números</button>
+        <button type="button" data-secao="reservas">Reservas</button>
+        <button type="button" data-secao="rifas">Rifas</button>
+        <button type="button" data-secao="pagina">Página inicial</button>
+        <button type="button" data-secao="conta">Conta</button>
+      </nav>
+    </header>
+
+    <main class="container adm-main">
+      <!-- Resumo -->
+      <section data-painel="resumo">
+        <h2>Resumo das vendas</h2>
+        <div class="cards-resumo" id="resumo-geral"></div>
+        <div class="tabela-wrap">
+          <table class="tabela">
+            <thead><tr><th>Rifa</th><th>Vendidos</th><th>Reservados</th><th>Disponíveis</th><th>Arrecadado</th><th>A receber</th></tr></thead>
+            <tbody id="resumo-tabela"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Números -->
+      <section data-painel="numeros" hidden>
+        <h2>Números</h2>
+        <div class="linha-ferramentas">
+          <select id="num-rifa" aria-label="Rifa"></select>
+          <div class="segmentado" role="group" aria-label="Filtro">
+            <button type="button" data-nfiltro="todos" class="ativo">Todos</button>
+            <button type="button" data-nfiltro="livres">Disponíveis</button>
+            <button type="button" data-nfiltro="reservado">Reservados</button>
+            <button type="button" data-nfiltro="vendido">Vendidos</button>
+          </div>
+        </div>
+        <div class="legenda">
+          <span><i class="bolinha livre"></i>Disponível</span>
+          <span><i class="bolinha reservado"></i>Reservado (aguardando pagamento)</span>
+          <span><i class="bolinha ocupado"></i>Vendido (pago)</span>
+        </div>
+        <p class="dica">Toque em um número para vender, reservar, confirmar pagamento ou liberar.</p>
+        <div class="grade" id="num-grade"></div>
+      </section>
+
+      <!-- Reservas -->
+      <section data-painel="reservas" hidden>
+        <h2>Reservas e vendas</h2>
+        <div class="linha-ferramentas">
+          <select id="res-rifa" aria-label="Filtrar por rifa"><option value="">Todas as rifas</option></select>
+          <select id="res-status" aria-label="Filtrar por status">
+            <option value="">Todos os status</option>
+            <option value="reservado">Reservados</option>
+            <option value="vendido">Vendidos</option>
+          </select>
+          <input type="search" id="res-busca" placeholder="Buscar nome, telefone ou número" aria-label="Buscar">
+          <button type="button" class="btn btn-sec btn-peq" id="btn-csv">Exportar CSV</button>
+        </div>
+        <div class="tabela-wrap">
+          <table class="tabela">
+            <thead><tr><th>Rifa</th><th>Nº</th><th>Nome</th><th>WhatsApp</th><th>Status</th><th>Data</th><th>Ações</th></tr></thead>
+            <tbody id="res-tabela"></tbody>
+          </table>
+        </div>
+        <p class="vazio" id="res-vazio" hidden>Nenhuma reserva encontrada.</p>
+      </section>
+
+      <!-- Rifas -->
+      <section data-painel="rifas" hidden>
+        <div class="titulo-acao">
+          <h2>Rifas</h2>
+          <button type="button" class="btn" id="btn-nova-rifa">+ Nova rifa</button>
+        </div>
+        <div class="lista-rifas" id="lista-rifas"></div>
+      </section>
+
+      <!-- Página inicial -->
+      <section data-painel="pagina" hidden>
+        <h2>Página inicial</h2>
+        <form id="form-pagina" class="form-grade">
+          <div class="foto-editor">
+            <img id="pg-hero-prev" alt="Foto principal">
+            <div>
+              <label class="btn btn-sec btn-peq">Trocar foto principal
+                <input type="file" id="pg-hero-arq" accept="image/*" hidden>
+              </label>
+              <button type="button" class="btn btn-sec btn-peq" id="pg-hero-padrao">Usar foto original</button>
+              <p class="dica">A foto mantém a proporção original. Imagens grandes são otimizadas automaticamente.</p>
+            </div>
+          </div>
+          <label>Título <input name="titulo" maxlength="80" required></label>
+          <label>Subtítulo <input name="subtitulo" maxlength="200"></label>
+          <label class="larga">Mensagem <textarea name="mensagem" rows="3" maxlength="600"></textarea></label>
+          <label>Chave PIX <input name="pix" maxlength="120"></label>
+          <label>WhatsApp para comprovantes (com DDD) <input name="whatsapp" inputmode="tel" maxlength="20"></label>
+          <label class="larga">Instruções de pagamento (aparecem após a reserva) <textarea name="instrucoes" rows="3" maxlength="600"></textarea></label>
+          <label class="larga">Texto do rodapé <input name="rodape" maxlength="200"></label>
+          <div class="larga"><button class="btn" type="submit">Salvar página inicial</button></div>
+        </form>
+
+        <div class="titulo-acao">
+          <h3>Galeria de fotos</h3>
+          <label class="btn btn-sec btn-peq">+ Adicionar fotos
+            <input type="file" id="gal-arq" accept="image/*" multiple hidden>
+          </label>
+        </div>
+        <div class="gal-adm" id="gal-adm"></div>
+      </section>
+
+      <!-- Conta -->
+      <section data-painel="conta" hidden>
+        <h2>Conta</h2>
+        <p>Conectado como <strong id="conta-email"></strong></p>
+        <form id="form-senha" class="form-grade estreita">
+          <label class="larga">Senha atual <input type="password" id="senha-atual" autocomplete="current-password" required></label>
+          <label class="larga">Nova senha (mínimo 8 caracteres) <input type="password" id="senha-nova" autocomplete="new-password" minlength="8" required></label>
+          <p class="erro larga" id="senha-erro" role="alert"></p>
+          <div class="larga"><button class="btn" type="submit">Alterar senha</button></div>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <!-- Ação em um número -->
+  <dialog id="dlg-num" class="dialogo">
+    <form id="form-num" method="dialog">
+      <h2 id="dn-titulo"></h2>
+      <p id="dn-info" class="dlg-resumo"></p>
+      <div id="dn-campos">
+        <label>Nome <input id="dn-nome" maxlength="80"></label>
+        <label>WhatsApp <input id="dn-tel" inputmode="tel" maxlength="20"></label>
+      </div>
+      <p class="erro" id="dn-erro" role="alert"></p>
+      <div class="dlg-acoes" id="dn-acoes"></div>
+    </form>
+  </dialog>
+
+  <!-- Criar/editar rifa -->
+  <dialog id="dlg-rifa" class="dialogo dialogo-largo">
+    <form id="form-rifa" method="dialog" class="form-grade">
+      <h2 class="larga" id="dr-titulo">Rifa</h2>
+      <label>Nome da rifa <input name="nome" maxlength="60" required></label>
+      <label>Prêmio <input name="premio" maxlength="120"></label>
+      <label class="larga">Descrição <textarea name="descricao" rows="3" maxlength="800"></textarea></label>
+      <label>Valor por número (R$) <input name="preco" type="number" min="0" step="0.01" required></label>
+      <label>Quantidade de números <input name="totalNumeros" type="number" min="1" max="10000" step="1" required></label>
+      <label>Data do sorteio <input name="dataSorteio" type="date"></label>
+      <label>Ordem de exibição <input name="ordem" type="number" step="1"></label>
+      <label class="check larga"><input name="ativa" type="checkbox"> Rifa visível no site</label>
+      <div class="foto-editor larga">
+        <img id="dr-img-prev" alt="Imagem do prêmio" hidden>
+        <div>
+          <label class="btn btn-sec btn-peq">Imagem do prêmio
+            <input type="file" id="dr-img-arq" accept="image/*" hidden>
+          </label>
+          <button type="button" class="btn btn-sec btn-peq" id="dr-img-remover">Remover imagem</button>
+        </div>
+      </div>
+      <p class="erro larga" id="dr-erro" role="alert"></p>
+      <div class="dlg-acoes larga">
+        <button type="button" class="btn btn-perigo" id="dr-excluir">Excluir rifa</button>
+        <span class="espaco"></span>
+        <button type="button" class="btn btn-sec" id="dr-cancelar">Cancelar</button>
+        <button type="submit" class="btn" id="dr-salvar">Salvar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script type="module" src="/js/admin.js"></script>
+</body>
+</html>

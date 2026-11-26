@@ -1,0 +1,14 @@
+{
+  "name": "rifa-tests",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "firebase emulators:exec --only firestore --project demo-rifa \"node --test rules.test.js\"",
+    "e2e": "cd .. && firebase emulators:exec --only auth,firestore,hosting --project rifa-gugaftv \"cd tests && node e2e.mjs\""
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^6.0.0",
+    "firebase": "^13.4.0",
+    "firebase-tools": "^15.37.0"
+  }
+}
