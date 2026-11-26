@@ -64,6 +64,17 @@ try {
   await a.waitForFunction(() => document.querySelectorAll('#grade .num.livre').length === 100);
   await a.screenshot({ path: `${SHOTS}/desktop-inicio.png`, fullPage: false });
 
+  // Abertura animada: aparece e some sozinha, liberando o site.
+  const intro = await (await novoContexto(devices['iPhone 13'])).newPage();
+  intro.on('pageerror', (e) => erros.push(e.message));
+  await intro.goto(`${BASE}/?emulador&intro`);
+  await intro.waitForSelector('#intro .letra');
+  assert.equal(await intro.locator('#intro .intro-cha .letra').count(), 'Chá Rifa'.length);
+  await intro.waitForSelector('#intro', { state: 'detached', timeout: 10000 });
+  await intro.click('#grade .num[data-n="1"]');
+  assert.equal(await intro.locator('#grade .num.meu').count(), 1);
+  ok('abertura animada aparece, some sozinha e libera o site');
+
   // 2) Visitante seleciona números verdes e reserva
   await a.click('#grade .num[data-n="5"]');
   await a.click('#grade .num[data-n="7"]');

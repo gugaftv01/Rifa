@@ -14,10 +14,30 @@
   <link rel="preload" as="font" type="font/woff2" href="/fonts/great-vibes.woff2" crossorigin>
   <link rel="preconnect" href="https://firestore.googleapis.com">
   <link rel="preconnect" href="https://www.gstatic.com">
-  <link rel="stylesheet" href="/css/style.css?v=4">
-  <link rel="stylesheet" href="/css/site.css?v=4">
+  <link rel="stylesheet" href="/css/style.css?v=5">
+  <link rel="stylesheet" href="/css/site.css?v=5">
+  <link rel="stylesheet" href="/css/intro.css?v=5">
+  <script src="/js/intro.js?v=5"></script>
 </head>
 <body class="site">
+  <!-- Abertura animada (some sozinha; toque para pular) -->
+  <div id="intro" role="presentation">
+    <div class="intro-coracoes" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="intro-bloco">
+      <p class="intro-cha" data-letras>Chá Rifa</p>
+      <p class="intro-nomes"><span data-letras>Marcela &amp; Guga</span>
+        <svg class="intro-casa" viewBox="0 0 64 64" aria-hidden="true">
+          <path class="traco" d="M6 31 32 9l26 22"/>
+          <path class="traco" d="M14 25v31h36V25"/>
+          <path class="traco" d="M43 17V9h6v13"/>
+          <path class="traco" d="M27 56V43h10v13"/>
+          <path class="coracao-casa" d="M32 37c-3-2.3-6-4.4-6-7.2 0-1.8 1.4-3.1 3-3.1 1.3 0 2.4.7 3 1.8.6-1.1 1.7-1.8 3-1.8 1.6 0 3 1.3 3 3.1 0 2.8-3 4.9-6 7.2z"/>
+        </svg>
+      </p>
+      <p class="intro-sub">de Casa Nova</p>
+    </div>
+    <p class="intro-pular">toque para entrar</p>
+  </div>
   <!-- Fundo desfocado (aparece nas laterais em telas largas) -->
   <div class="fundo-pagina" aria-hidden="true"><img id="fundo-blur" src="/img/foto-3.jpg" alt=""></div>
 
@@ -48,26 +68,25 @@
       </div>
 
       <section class="infos" aria-label="Informações da rifa">
-        <div class="pilula">
-          <span id="mensagem">O sorteio será realizado assim que acabarem todos os números</span>
-          <strong id="cartela-pos"></strong>
+        <div class="cartao">
+          <span class="rotulo">Sorteio</span>
+          <p class="texto" id="mensagem">O sorteio será realizado assim que acabarem todos os números</p>
+          <strong class="selo" id="cartela-pos"></strong>
           <span class="data-sorteio" id="data-sorteio" hidden></span>
         </div>
-        <div class="pilula premios" id="premios-box" hidden>
-          <strong>Prêmios</strong>
+        <div class="cartao premios" id="premios-box" hidden>
+          <span class="rotulo">Prêmios</span>
           <p id="premios"></p>
         </div>
-        <div class="duplas">
-          <div class="pilula">
-            <span>Cada número é</span>
-            <strong id="preco"></strong>
-          </div>
-          <button type="button" class="pilula pix" id="pix-btn" hidden>
-            <span>Pix</span>
-            <strong id="pix"></strong>
-            <small>toque para copiar</small>
-          </button>
+        <div class="cartao">
+          <span class="rotulo">Cada número</span>
+          <strong class="valor" id="preco"></strong>
         </div>
+        <button type="button" class="cartao pix" id="pix-btn" hidden>
+          <span class="rotulo">Chave Pix</span>
+          <strong class="valor" id="pix"></strong>
+          <small>toque para copiar</small>
+        </button>
       </section>
 
       <!-- Escolha de cartela: discreta, bem no final -->
@@ -130,6 +149,6 @@
     </div>
   </dialog>
 
-  <script type="module" src="/js/app.js?v=4"></script>
+  <script type="module" src="/js/app.js?v=5"></script>
 </body>
 </html>
