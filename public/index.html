@@ -13,10 +13,10 @@
   <link rel="preload" as="font" type="font/woff2" href="/fonts/montserrat-800.woff2" crossorigin>
   <link rel="preload" as="font" type="font/woff2" href="/fonts/alex-brush.woff2" crossorigin>
   <link rel="preconnect" href="https://firestore.googleapis.com">
-  <link rel="stylesheet" href="/css/style.css?v=21">
-  <link rel="stylesheet" href="/css/site.css?v=21">
-  <link rel="stylesheet" href="/css/intro.css?v=21">
-  <script src="/js/intro.js?v=21"></script>
+  <link rel="stylesheet" href="/css/style.css?v=23">
+  <link rel="stylesheet" href="/css/site.css?v=23">
+  <link rel="stylesheet" href="/css/intro.css?v=23">
+  <script src="/js/intro.js?v=23"></script>
 </head>
 <body class="site">
   <!-- Abertura animada: a casa se desenha, a porta abre e aparecem os nomes (toque para pular) -->
@@ -55,6 +55,9 @@
   <div class="fundo-pagina" aria-hidden="true"><img id="fundo-blur" src="/img/foto-3.jpg" alt=""></div>
 
   <!-- Só no computador: alterna entre o cartaz estreito e a tela grande -->
+  <!-- Aviso de internet lenta / sem conexão -->
+  <div class="aviso-rede" id="aviso-rede" role="alert" hidden></div>
+
   <button type="button" class="btn-tela" id="btn-tela" hidden aria-pressed="false">⛶ Tela grande</button>
 
   <div class="poster">
@@ -74,7 +77,7 @@
       <p class="dica" id="dica"><span>Escolha seu número da rifa</span><span class="dica-coracao" id="dica-coracao" aria-hidden="true" hidden><b id="dica-num"></b></span></p>
 
       <div class="grade" id="grade" role="group" aria-label="Números da cartela">
-        <p class="carregando" id="carregando">Carregando…</p>
+        <div class="aviso-carregando" role="status"><strong>⏳ Carregando os números…</strong><span id="aviso-lento">Aguarde um pouquinho.</span></div>
       </div>
 
       <div class="legenda-site" aria-hidden="true">
@@ -165,6 +168,6 @@
     </div>
   </dialog>
 
-  <script type="module" src="/js/app.js?v=21"></script>
+  <script type="module" src="/js/app.js?v=23"></script>
 </body>
 </html>

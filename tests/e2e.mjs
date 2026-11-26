@@ -285,6 +285,14 @@ try {
   ok('ADM alterou o título da página inicial');
 
   await a.screenshot({ path: `${SHOTS}/desktop-final.png`, fullPage: true });
+  // Sem internet: aviso grande e vermelho no topo; some quando a conexão volta
+  await a.context().setOffline(true);
+  await a.waitForSelector('#aviso-rede:not([hidden])');
+  assert.match(await a.textContent('#aviso-rede'), /sem internet/);
+  await a.context().setOffline(false);
+  await a.waitForSelector('#aviso-rede', { state: 'hidden' });
+  ok('sem internet aparece o aviso vermelho no topo, e ele some quando a conexão volta');
+
   assert.deepEqual(erros, [], 'erros de JavaScript na página: ' + erros.join(' | '));
   ok('nenhum erro de JavaScript no site');
   assert.deepEqual(violacoesCsp, [], 'violações de CSP: ' + violacoesCsp.join(' | '));

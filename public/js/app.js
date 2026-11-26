@@ -45,6 +45,23 @@ const estado = {
   });
 })();
 
+/* ---------- Aviso de internet ---------- */
+// Se nada carregar em 4 s, avisa que a internet está lenta.
+estado.timerLento = setTimeout(() => {
+  const el = $('aviso-lento');
+  if (el && !estado.numerosCarregados) el.textContent = 'Sua internet está lenta. Os números vão aparecer já já, não feche a página 🙏';
+}, 4000);
+function avisarRede() {
+  const el = $('aviso-rede');
+  let msg = '';
+  if (!navigator.onLine) msg = '📵 Você está sem internet! Os números podem não estar atualizados. Espere a conexão voltar para reservar.';
+  else if (estado.doCache && estado.numerosCarregados) msg = '📶 Internet lenta: atualizando os números… aguarde antes de reservar.';
+  el.textContent = msg;
+  el.hidden = !msg;
+}
+window.addEventListener('online', avisarRede);
+window.addEventListener('offline', avisarRede);
+
 const rifaAtual = () => estado.rifas.find((r) => r.id === estado.rifaId);
 const listaNumeros = (nums) => nums.join(', ');
 
@@ -110,7 +127,9 @@ function selecionarRifa(id, mexerUrl, semPerguntar = false) {
   estado.numerosCarregados = false;
   if (mexerUrl) history.replaceState(null, '', `#${id}`);
   if (estado.pararNumeros) estado.pararNumeros();
-  estado.pararNumeros = onSnapshot(collection(db, 'rifas', id, 'numeros'), (snap) => {
+  estado.pararNumeros = onSnapshot(collection(db, 'rifas', id, 'numeros'), { includeMetadataChanges: true }, (snap) => {
+    estado.doCache = snap.metadata.fromCache;
+    avisarRede();
     estado.ocupados = new Set(snap.docs.map((d) => Number(d.id)));
     estado.numerosCarregados = true;
     // Se alguém reservou um número que eu tinha escolhido, ele sai da minha seleção.
@@ -194,7 +213,15 @@ function varrerNumeros() {
 function desenharGrade(r) {
   atualizarRodizio(r);
   if (!estado.numerosCarregados) {
-    $('grade').innerHTML = '<p class="carregando">Carregando números…</p>';
+    $('grade').innerHTML = `<div class="aviso-carregando" role="status">
+      <strong>⏳ Carregando os números…</strong>
+      <span id="aviso-lento">Aguarde um pouquinho.</span>
+    </div>`;
+    clearTimeout(estado.timerLento);
+    estado.timerLento = setTimeout(() => {
+      const el = $('aviso-lento');
+      if (el && !estado.numerosCarregados) el.textContent = 'Sua internet está lenta. Os números vão aparecer já já, não feche a página 🙏';
+    }, 4000);
     return;
   }
   const { ini, fim } = faixa(r);
@@ -283,6 +310,7 @@ $('form-reserva').addEventListener('submit', async (e) => {
   const telefone = soDigitos($('in-tel').value);
   if (nome.length < 2) { $('form-erro').textContent = 'Informe seu nome.'; return; }
   if (telefone.length < 10 || telefone.length > 11) { $('form-erro').textContent = 'Informe um WhatsApp válido com DDD.'; return; }
+  if (!navigator.onLine) { $('form-erro').textContent = 'Você está sem internet. Espere a conexão voltar para reservar.'; return; }
 
   const r = rifaAtual();
   const nums = [...estado.selecionados].sort((a, b) => a - b);
