@@ -43,7 +43,7 @@ de cada vez por documento, então, quando duas pessoas clicam juntas, só uma co
 - **Página inicial:** título, textos, foto principal, galeria, PIX e WhatsApp.
 - **Conta:** trocar a senha.
 
-### Adicionar outro administrador
+### Criar um administrador
 
 1. Firebase Console → Authentication → Usuários → **Adicionar usuário** (e-mail e senha).
 2. Copie o **UID** do usuário criado.
@@ -61,9 +61,11 @@ cd tests
 npm install
 npm test        # regras de segurança (11 testes)
 npm run e2e     # site completo no navegador contra os emuladores (20 verificações)
+npm run smoke   # verificação SOMENTE LEITURA do banco de produção
 ```
 
-Os testes usam emuladores locais e **não tocam no banco de produção**.
+`npm test` e `npm run e2e` usam emuladores locais e **não tocam no banco de produção**.
+`npm run smoke` lê o banco real, mas não grava nada.
 
 ## Publicar
 
