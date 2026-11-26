@@ -313,23 +313,23 @@ $('form-reserva').addEventListener('submit', async (e) => {
   mostrarResultado(r, ok, falhou, nome, telefone);
 });
 
-// Mensagem organizada que a pessoa envia junto com o comprovante.
-function mensagemWhatsApp({ c, r, pos, ok, nome, telefone, total }) {
-  const qtd = ok.length;
+// Mensagem que a pessoa manda no WhatsApp: natural, de gente pra gente.
+const MINUSCULAS = new Set(['de', 'da', 'do', 'das', 'dos', 'e']);
+function nomeBonito(nome) {
+  return nome.trim().toLowerCase().split(/\s+/)
+    .map((p, i) => (i > 0 && MINUSCULAS.has(p) ? p : p.charAt(0).toUpperCase() + p.slice(1)))
+    .join(' ');
+}
+const juntarComE = (l) => (l.length > 1 ? `${l.slice(0, -1).join(', ')} e ${l[l.length - 1]}` : String(l[0]));
+
+function mensagemWhatsApp({ c, ok, nome, total }) {
+  const primeiroNome = nomeBonito(nome).split(' ')[0];
+  const numeros = ok.length === 1 ? `o número ${ok[0]}` : `os números ${juntarComE(ok)}`;
   return [
-    `🏡 *${c.titulo}*`,
-    c.subtitulo ? `_${c.subtitulo}_` : null,
-    '',
-    'Olá! Acabei de reservar meus números 🍀',
-    '',
-    `👤 *Nome:* ${nome}`,
-    `📱 *WhatsApp:* ${formatarTelefone(telefone)}`,
-    `🎟️ *${pos}*`,
-    `🔢 *${qtd === 1 ? 'Número' : 'Números'}:* ${listaNumeros(ok)}`,
-    `💰 *Total:* ${total} (${qtd} × ${brl(r.preco)})`,
-    '',
-    'Segue o comprovante do Pix 👇',
-  ].filter((l) => l !== null).join('\n');
+    `Oi! Tudo bem? 😊 Aqui é ${primeiroNome}.`,
+    `Acabei de reservar ${numeros} na ${c.titulo || 'rifa'} de vocês 🏡`,
+    `Deu ${total}. Já te mando o comprovante do Pix aqui 👇`,
+  ].join('\n');
 }
 
 function mostrarResultado(r, ok, falhou, nome, telefone) {
