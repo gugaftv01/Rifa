@@ -115,7 +115,31 @@ function desenharRifa() {
   desenharCarrinho();
 }
 
+// Coração ao lado da dica: vai mostrando, um por vez, os números livres da cartela.
+let rodizio = { lista: [], i: 0 };
+function atualizarRodizio(r) {
+  const total = Number(r.totalNumeros) || 0;
+  const livres = [];
+  for (let n = 1; n <= total; n++) if (!estado.ocupados.has(n)) livres.push(n);
+  rodizio.lista = livres;
+  if (rodizio.i >= livres.length) rodizio.i = 0;
+  $('dica-coracao').hidden = !estado.numerosCarregados || !livres.length;
+  if (livres.length && !$('dica-num').textContent) mostrarRodizio();
+}
+function mostrarRodizio() {
+  const { lista } = rodizio;
+  if (!lista.length) return;
+  const el = $('dica-num');
+  el.textContent = lista[rodizio.i % lista.length];
+  el.classList.remove('troca');
+  void el.offsetWidth; // reinicia a animação de troca
+  el.classList.add('troca');
+  rodizio.i = (rodizio.i + 1) % lista.length;
+}
+setInterval(mostrarRodizio, 1100);
+
 function desenharGrade(r) {
+  atualizarRodizio(r);
   if (!estado.numerosCarregados) {
     $('grade').innerHTML = '<p class="carregando">Carregando números…</p>';
     return;
